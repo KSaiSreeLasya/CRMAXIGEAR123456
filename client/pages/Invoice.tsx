@@ -197,6 +197,8 @@ export default function Invoice() {
               border-collapse: collapse;
               border: 2px solid #666;
               margin-bottom: 2rem;
+              page-break-inside: avoid;
+              break-inside: avoid;
             }
             th {
               background-color: #d4edda;
@@ -281,10 +283,6 @@ export default function Invoice() {
             }
             .font-mono {
               font-family: 'Courier New', monospace;
-            }
-            table {
-              page-break-inside: avoid;
-              break-inside: avoid;
             }
             tr {
               page-break-inside: avoid;
