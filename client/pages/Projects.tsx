@@ -130,9 +130,10 @@ export default function Projects() {
       }
 
       setIsModalOpen(false);
-    } catch (error) {
-      console.error("Error creating project:", error);
-      alert("Failed to create project. Please try again.");
+    } catch (error: any) {
+      const errorMessage = error?.message || error?.error_description || JSON.stringify(error);
+      console.error("Error creating project:", errorMessage);
+      alert(`Failed to create project: ${errorMessage}`);
     }
   };
 
@@ -152,9 +153,10 @@ export default function Projects() {
       }
 
       setProjects(projects.filter((p) => p.id !== id));
-    } catch (error) {
-      console.error("Error deleting project:", error);
-      alert("Failed to delete project. Please try again.");
+    } catch (error: any) {
+      const errorMessage = error?.message || error?.error_description || JSON.stringify(error);
+      console.error("Error deleting project:", errorMessage);
+      alert(`Failed to delete project: ${errorMessage}`);
     }
   };
 
