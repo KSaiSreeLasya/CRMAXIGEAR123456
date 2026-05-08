@@ -13,6 +13,7 @@ export default function Invoice() {
   const [project, setProject] = useState<Project | null>(null);
   const [invoiceNo, setInvoiceNo] = useState("AAV/2026-27/001");
   const [gstType, setGstType] = useState<"igst" | "cgst-sgst">("igst");
+  const [placeOfSupply, setPlaceOfSupply] = useState<string>("TG");
 
   useEffect(() => {
     if (projectId) {
@@ -145,22 +146,52 @@ export default function Invoice() {
             </div>
           </div>
 
-          {/* GST Type Selector */}
+          {/* GST Type Selector and Place of Supply */}
           <div className="mb-6 print:hidden">
-            <div className="bg-white p-4 rounded-lg border border-border shadow-sm max-w-4xl mx-auto">
-              <label className="block text-sm font-semibold mb-2 text-gray-700">
-                GST Type:
-              </label>
-              <select
-                value={gstType}
-                onChange={(e) => setGstType(e.target.value as "igst" | "cgst-sgst")}
-                className="text-sm border border-gray-300 rounded px-3 py-2 bg-white font-medium"
-              >
-                <option value="igst">IGST (5%) - Inter-state Transaction</option>
-                <option value="cgst-sgst">
-                  CGST + SGST (2.5% each) - Intra-state Transaction
-                </option>
-              </select>
+            <div className="bg-white p-4 rounded-lg border border-border shadow-sm max-w-4xl mx-auto space-y-4">
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-700">
+                  GST Type:
+                </label>
+                <select
+                  value={gstType}
+                  onChange={(e) => {
+                    const newGstType = e.target.value as "igst" | "cgst-sgst";
+                    setGstType(newGstType);
+                    if (newGstType === "cgst-sgst") {
+                      setPlaceOfSupply("TG");
+                    }
+                  }}
+                  className="text-sm border border-gray-300 rounded px-3 py-2 bg-white font-medium w-full"
+                >
+                  <option value="igst">IGST (5%) - Inter-state Transaction</option>
+                  <option value="cgst-sgst">
+                    CGST + SGST (2.5% each) - Intra-state Transaction
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-700">
+                  Place of Supply:
+                </label>
+                {gstType === "cgst-sgst" ? (
+                  <input
+                    type="text"
+                    value="36-TG"
+                    disabled
+                    className="text-sm border border-gray-300 rounded px-3 py-2 bg-gray-100 font-medium w-full text-gray-600 cursor-not-allowed"
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    value={placeOfSupply}
+                    onChange={(e) => setPlaceOfSupply(e.target.value.toUpperCase())}
+                    placeholder="Enter state code (e.g., TG, KA, MH)"
+                    className="text-sm border border-gray-300 rounded px-3 py-2 bg-white font-medium w-full focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                )}
+              </div>
             </div>
           </div>
 
@@ -169,6 +200,7 @@ export default function Invoice() {
             project={project}
             invoiceNo={invoiceNo}
             gstType={gstType}
+            placeOfSupply={placeOfSupply}
             forPrint={false}
           />
         </div>

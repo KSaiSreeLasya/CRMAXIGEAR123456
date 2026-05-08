@@ -4,6 +4,7 @@ interface InvoiceContentProps {
   project: Project;
   invoiceNo: string;
   gstType: "igst" | "cgst-sgst";
+  placeOfSupply: string;
   forPrint?: boolean;
 }
 
@@ -26,6 +27,7 @@ export default function InvoiceContent({
   project,
   invoiceNo,
   gstType,
+  placeOfSupply,
   forPrint = false,
 }: InvoiceContentProps) {
   // Calculate taxes based on GST type
@@ -104,7 +106,7 @@ export default function InvoiceContent({
           </div>
           <div>
             <p className="text-xs text-gray-600 font-bold">Place of Supply:</p>
-            <p className="font-semibold">36-{project.location}</p>
+            <p className="font-semibold">36-{placeOfSupply}</p>
           </div>
           <div>
             <p className="text-xs text-gray-600 font-bold">Reverse Charge:</p>
