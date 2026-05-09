@@ -3,13 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 
-const DEFAULT_EMAIL = "admin@axigear.in";
-const DEFAULT_PASSWORD = "Axigear@2026";
-
 export default function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState(DEFAULT_EMAIL);
-  const [password, setPassword] = useState(DEFAULT_PASSWORD);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -27,12 +24,12 @@ export default function Login() {
         if (error) throw error;
         if (data.session) {
           localStorage.setItem("auth_token", data.session.access_token);
-          navigate("/projects");
+          navigate("/dashboard");
         }
       } else {
         // Offline mode: allow login without Supabase
         localStorage.setItem("auth_token", "offline-" + Date.now());
-        navigate("/projects");
+        navigate("/dashboard");
       }
     } catch (err: any) {
       setError(err.message || "An error occurred");

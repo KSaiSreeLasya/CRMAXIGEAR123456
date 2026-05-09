@@ -124,7 +124,7 @@ export default function EditProjectModal({
         <div className="bg-card rounded-lg border border-border shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
           {/* Modal Header */}
           <div className="sticky top-0 bg-card border-b border-border p-6 flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Edit Project</h2>
+            <h2 className="text-2xl font-bold">Edit Sales</h2>
             <button
               onClick={onClose}
               className="text-muted-foreground hover:text-foreground transition-colors"
@@ -300,7 +300,7 @@ export default function EditProjectModal({
                 type="submit"
                 className="bg-primary hover:bg-primary/90 text-primary-foreground px-6"
               >
-                Update Project
+                Update Sales
               </Button>
             </div>
           </form>

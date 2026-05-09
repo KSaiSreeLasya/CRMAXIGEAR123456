@@ -227,9 +227,9 @@ export default function Projects() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Projects</h1>
+              <h1 className="text-3xl font-bold mb-2">Sales</h1>
               <p className="text-muted-foreground">
-                Create and manage your EV bike sales projects with retailers.
+                Create and manage your EV bike sales entries with retailers.
               </p>
             </div>
             <Button
@@ -237,24 +237,24 @@ export default function Projects() {
               className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
             >
               <Plus className="w-4 h-4" />
-              Create Project
+              Create Sales
             </Button>
           </div>
 
-          {/* Projects Table */}
+          {/* Sales Table */}
           {projects.length === 0 ? (
             <div className="bg-card rounded-lg border border-border p-12 text-center">
               <div className="space-y-4 max-w-md mx-auto">
-                <h2 className="text-2xl font-semibold">No projects yet</h2>
+                <h2 className="text-2xl font-semibold">No sales yet</h2>
                 <p className="text-muted-foreground">
-                  Create your first project to start tracking EV bike sales opportunities.
+                  Create your first sales entry to start tracking EV bike sales opportunities.
                 </p>
                 <Button
                   onClick={() => setIsModalOpen(true)}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
                 >
                   <Plus className="w-4 h-4" />
-                  Create Project
+                  Create Sales
                 </Button>
               </div>
             </div>
