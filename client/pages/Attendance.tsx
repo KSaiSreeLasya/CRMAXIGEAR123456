@@ -9,6 +9,7 @@ interface AttendanceEntry {
   id: string;
   employeeName: string;
   attendanceDate: string;
+  attendanceTime: string;
   status: "Present" | "Absent" | "Half Day" | "Leave";
   remark: string;
 }
@@ -18,6 +19,7 @@ export default function Attendance() {
   const [records, setRecords] = useState<AttendanceEntry[]>([]);
   const [employeeName, setEmployeeName] = useState("");
   const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().slice(0, 10));
+  const [attendanceTime, setAttendanceTime] = useState(new Date().toTimeString().slice(0, 5));
   const [status, setStatus] = useState<AttendanceEntry["status"]>("Present");
   const [remark, setRemark] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -39,13 +41,15 @@ export default function Attendance() {
         const { data, error } = await supabase
           .from("attendance")
           .select("*")
-          .order("attendance_date", { ascending: false });
+          .order("attendance_date", { ascending: false })
+          .order("attendance_time", { ascending: false });
         if (error) throw error;
         const rows: AttendanceEntry[] =
           data?.map((row: any) => ({
             id: row.id,
             employeeName: row.employee_name,
             attendanceDate: row.attendance_date,
+            attendanceTime: row.attendance_time || "",
             status: row.status,
             remark: row.remark || "",
           })) || [];
@@ -82,6 +86,7 @@ export default function Attendance() {
               user_id: userData.user.id,
               employee_name: employeeName.trim(),
               attendance_date: attendanceDate,
+              attendance_time: attendanceTime,
               status,
               remark: remark.trim() || null,
             },
@@ -94,6 +99,7 @@ export default function Attendance() {
           id: data.id,
           employeeName: data.employee_name,
           attendanceDate: data.attendance_date,
+          attendanceTime: data.attendance_time || "",
           status: data.status,
           remark: data.remark || "",
         };
@@ -103,6 +109,7 @@ export default function Attendance() {
           id: `attendance_${Date.now()}`,
           employeeName: employeeName.trim(),
           attendanceDate,
+          attendanceTime,
           status,
           remark: remark.trim(),
         };
@@ -112,6 +119,7 @@ export default function Attendance() {
       setEmployeeName("");
       setRemark("");
       setStatus("Present");
+      setAttendanceTime(new Date().toTimeString().slice(0, 5));
     } catch (error: any) {
       console.error("Error saving attendance:", error);
       alert(error?.message || "Failed to save attendance.");
@@ -135,7 +143,7 @@ export default function Attendance() {
 
         <div className="bg-card rounded-lg border border-border p-6">
           <h2 className="text-xl font-semibold mb-4">Mark Attendance</h2>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-6 gap-4">
             <input
               type="text"
               placeholder="Employee Name"
@@ -149,6 +157,13 @@ export default function Attendance() {
               className="w-full px-4 py-2 border border-border rounded-lg bg-background"
               value={attendanceDate}
               onChange={(e) => setAttendanceDate(e.target.value)}
+              required
+            />
+            <input
+              type="time"
+              className="w-full px-4 py-2 border border-border rounded-lg bg-background"
+              value={attendanceTime}
+              onChange={(e) => setAttendanceTime(e.target.value)}
               required
             />
             <select
@@ -190,6 +205,7 @@ export default function Attendance() {
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left px-4 py-3">Date</th>
+                    <th className="text-left px-4 py-3">Time</th>
                     <th className="text-left px-4 py-3">Employee</th>
                     <th className="text-left px-4 py-3">Status</th>
                     <th className="text-left px-4 py-3">Remark</th>
@@ -199,6 +215,7 @@ export default function Attendance() {
                   {records.map((item) => (
                     <tr key={item.id} className="border-b border-border">
                       <td className="px-4 py-3">{item.attendanceDate}</td>
+                      <td className="px-4 py-3">{item.attendanceTime || "-"}</td>
                       <td className="px-4 py-3 font-medium">{item.employeeName}</td>
                       <td className="px-4 py-3">{item.status}</td>
                       <td className="px-4 py-3">{item.remark || "-"}</td>

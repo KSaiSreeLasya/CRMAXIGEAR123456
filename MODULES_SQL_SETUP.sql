@@ -24,10 +24,16 @@ create table if not exists public.attendance (
   user_id uuid,
   employee_name text not null,
   attendance_date date not null,
+  attendance_time time not null default now()::time,
   status text not null check (status in ('Present', 'Absent', 'Half Day', 'Leave')),
   remark text,
   created_at timestamptz not null default now()
 );
+
+alter table public.attendance add column if not exists attendance_time time;
+update public.attendance
+set attendance_time = coalesce(attendance_time, now()::time)
+where attendance_time is null;
 
 create table if not exists public.inventory_items (
   id uuid primary key default gen_random_uuid(),
