@@ -496,7 +496,7 @@ export default function ServiceInvoice() {
               ) : (
                 spares.map((spare) => (
                   <option key={spare.id} value={spare.partName}>
-                    {spare.partName} - Qty: {spare.qty} - ₹{spare.price.toFixed(2)}
+                    {spare.partName}
                   </option>
                 ))
               )}

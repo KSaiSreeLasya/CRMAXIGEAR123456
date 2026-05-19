@@ -12,7 +12,7 @@ interface ServiceInvoiceRecord {
 }
 
 interface ServiceInvoiceContentProps {
-  invoice: ServiceInvoiceRecord;
+  invoice: ServiceInvoiceRecord & { unit?: number; total?: number };
   gstType: "igst" | "cgst-sgst";
   forPrint?: boolean;
 }
@@ -39,9 +39,10 @@ export default function ServiceInvoiceContent({
   gstType,
   forPrint = false,
 }: ServiceInvoiceContentProps) {
-  const totalAmount = invoice.amount;
-  const taxableAmount = roundCurrency(totalAmount / 1.05);
-  const gstAmount = roundCurrency(totalAmount - taxableAmount);
+  const baseAmount = invoice.total || invoice.amount || 0;
+  const taxableAmount = baseAmount;
+  const gstAmount = roundCurrency(baseAmount * 0.05);
+  const totalAmount = roundCurrency(baseAmount + gstAmount);
   const igstAmount = gstType === "igst" ? gstAmount : 0;
   const cgstAmount = gstType === "cgst-sgst" ? roundCurrency(gstAmount / 2) : 0;
   const sgstAmount = gstType === "cgst-sgst" ? roundCurrency(gstAmount - cgstAmount) : 0;
@@ -141,8 +142,14 @@ export default function ServiceInvoiceContent({
             <th className="border border-gray-400 px-3 py-2 text-left text-xs font-bold text-gray-700">
               Details
             </th>
+            <th className="border border-gray-400 px-3 py-2 text-center text-xs font-bold text-gray-700">
+              Unit
+            </th>
             <th className="border border-gray-400 px-3 py-2 text-right text-xs font-bold text-gray-700">
               Amount
+            </th>
+            <th className="border border-gray-400 px-3 py-2 text-right text-xs font-bold text-gray-700">
+              Total
             </th>
           </tr>
         </thead>
@@ -155,8 +162,14 @@ export default function ServiceInvoiceContent({
             <td className="border border-gray-400 px-3 py-2 text-sm text-gray-700">
               {invoice.productDescription}
             </td>
+            <td className="border border-gray-400 px-3 py-2 text-center font-semibold text-gray-900">
+              {invoice.unit || 1}
+            </td>
             <td className="border border-gray-400 px-3 py-2 text-right font-bold text-gray-900">
-              ₹{taxableAmount.toFixed(2)}
+              ₹{(invoice.amount || 0).toFixed(2)}
+            </td>
+            <td className="border border-gray-400 px-3 py-2 text-right font-bold text-gray-900">
+              ₹{(invoice.total || invoice.amount || 0).toFixed(2)}
             </td>
           </tr>
         </tbody>
