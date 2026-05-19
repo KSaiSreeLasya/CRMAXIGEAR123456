@@ -356,7 +356,7 @@ export default function Accounts() {
             Back to Dashboard
           </Button>
           <div>
-            <h1 className="text-3xl font-bold mb-2">Estimation cost</h1>
+            <h1 className="text-3xl font-bold mb-2">Estimation</h1>
             <p className="text-muted-foreground">
               Create and track estimation slips for customers.
             </p>
@@ -364,7 +364,7 @@ export default function Accounts() {
 
           <div className="bg-card rounded-lg border border-border p-6">
             <h2 className="text-xl font-semibold mb-6">
-              {editingId ? "Edit Estimation Cost" : "Create Estimation Cost"}
+              {editingId ? "Edit Estimation" : "Create Estimation"}
             </h2>
             <form
               onSubmit={handleEstimationFormSubmit}
