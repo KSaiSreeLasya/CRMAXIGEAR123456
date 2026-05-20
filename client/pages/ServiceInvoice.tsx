@@ -109,15 +109,10 @@ export default function ServiceInvoice() {
     try {
       if (supabase) {
         try {
-          const employeeSession = getEmployeeSession();
-          let query = supabase.from("service_invoices").select("*");
-
-          // If employee is logged in, filter by employee_id
-          if (employeeSession) {
-            query = query.eq("employee_id", employeeSession.employeeId);
-          }
-
-          const { data, error } = await query.order("created_at", { ascending: false });
+          const { data, error } = await supabase
+            .from("service_invoices")
+            .select("*")
+            .order("created_at", { ascending: false });
           if (error) throw error;
           const rows: ServiceInvoiceRecord[] =
             data?.map((row: any) => ({
@@ -154,15 +149,11 @@ export default function ServiceInvoice() {
     try {
       if (supabase) {
         try {
-          const employeeSession = getEmployeeSession();
-          let query = supabase.from("spares_inventory").select("*").gt("qty", 0);
-
-          // If employee is logged in, filter by employee_id
-          if (employeeSession) {
-            query = query.eq("employee_id", employeeSession.employeeId);
-          }
-
-          const { data, error } = await query.order("part_name", { ascending: true });
+          const { data, error } = await supabase
+            .from("spares_inventory")
+            .select("*")
+            .gt("qty", 0)
+            .order("part_name", { ascending: true });
           if (error) throw error;
           const rows: SpareItem[] =
             data?.map((row: any) => ({

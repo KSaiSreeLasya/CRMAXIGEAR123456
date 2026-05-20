@@ -266,19 +266,11 @@ export default function Attendance() {
     const monthEnd = `${ym}-${pad2(daysInMonth(y, m))}`;
 
     if (supabase) {
-      const employeeSession = getEmployeeSession();
-      let query = supabase
+      const { data, error } = await supabase
         .from("attendance")
         .select("*")
         .gte("attendance_date", monthStart)
-        .lte("attendance_date", monthEnd);
-
-      // If employee is logged in, only show their own attendance
-      if (employeeSession) {
-        query = query.eq("employee_id", employeeSession.employeeId);
-      }
-
-      const { data, error } = await query
+        .lte("attendance_date", monthEnd)
         .order("attendance_date", { ascending: true })
         .order("attendance_time", { ascending: false });
       if (error) throw error;

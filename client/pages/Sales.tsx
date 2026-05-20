@@ -44,15 +44,10 @@ export default function Sales() {
     try {
       if (supabase) {
         try {
-          const employeeSession = getEmployeeSession();
-          let query = supabase.from("estimations").select("*");
-
-          // If employee is logged in, filter by employee_id
-          if (employeeSession) {
-            query = query.eq("employee_id", employeeSession.employeeId);
-          }
-
-          const { data, error } = await query.order("created_at", { ascending: false });
+          const { data, error } = await supabase
+            .from("estimations")
+            .select("*")
+            .order("created_at", { ascending: false });
           if (error) {
             console.warn("Supabase error:", error.message);
             throw error;
