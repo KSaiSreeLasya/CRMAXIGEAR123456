@@ -253,58 +253,72 @@ export default function Inventory() {
           if (employeeSession) {
             userId = employeeSession.employeeId;
           } else {
-            const { data: userData } = await supabase.auth.getUser();
-            userId = userData.user?.id;
+            try {
+              const { data: userData } = await supabase.auth.getUser();
+              userId = userData.user?.id;
+            } catch (err) {
+              console.warn("Could not fetch Supabase user:", err);
+            }
           }
 
           if (!userId) {
             throw new Error("User not authenticated");
           }
 
-          const { data, error } = await supabase
-            .from("inventory_items")
-            .insert([
-              {
-                user_id: userId,
-                sl_no: payload.slNo,
-                model_no: payload.modelNo || null,
-                brand: payload.brand || null,
-                vehicle_model: payload.vehicleModel || null,
-                hsn_no: payload.hsnNo || null,
-                vehicle_count: payload.vehicleCount,
-                chassis_no: payload.chassisNo || null,
-                motor_no: payload.motorNo || null,
-                battery_no: payload.batteryNo || null,
-                manufacturer_inv_no: payload.manufacturerInvNo || null,
-                battery_model: payload.batteryModel || null,
-                battery_count: payload.batteryCount,
-                sales_count: payload.salesCount,
-                closing_stock: payload.closingStock,
-              },
-            ])
-            .select()
-            .single();
-          if (error) throw error;
+          try {
+            const { data, error } = await supabase
+              .from("inventory_items")
+              .insert([
+                {
+                  user_id: userId,
+                  sl_no: payload.slNo,
+                  model_no: payload.modelNo || null,
+                  brand: payload.brand || null,
+                  vehicle_model: payload.vehicleModel || null,
+                  hsn_no: payload.hsnNo || null,
+                  vehicle_count: payload.vehicleCount,
+                  chassis_no: payload.chassisNo || null,
+                  motor_no: payload.motorNo || null,
+                  battery_no: payload.batteryNo || null,
+                  manufacturer_inv_no: payload.manufacturerInvNo || null,
+                  battery_model: payload.batteryModel || null,
+                  battery_count: payload.batteryCount,
+                  sales_count: payload.salesCount,
+                  closing_stock: payload.closingStock,
+                },
+              ])
+              .select()
+              .single();
+            if (error) throw error;
 
-          const created: InventoryItem = {
-            id: data.id,
-            slNo: data.sl_no,
-            modelNo: data.model_no || "",
-            brand: data.brand || "",
-            vehicleModel: data.vehicle_model || "",
-            hsnNo: data.hsn_no || "",
-            vehicleCount: data.vehicle_count || 0,
-            chassisNo: data.chassis_no || "",
-            motorNo: data.motor_no || "",
-            batteryNo: data.battery_no || "",
-            manufacturerInvNo: data.manufacturer_inv_no || "",
-            batteryModel: data.battery_model || "",
-            batteryCount: data.battery_count || 0,
-            salesCount: data.sales_count || 0,
-            closingStock: data.closing_stock || 0,
-            createdAt: new Date(data.created_at).toLocaleDateString(),
-          };
-          setItems((prev) => [...prev, created].sort((a, b) => a.slNo - b.slNo));
+            const created: InventoryItem = {
+              id: data.id,
+              slNo: data.sl_no,
+              modelNo: data.model_no || "",
+              brand: data.brand || "",
+              vehicleModel: data.vehicle_model || "",
+              hsnNo: data.hsn_no || "",
+              vehicleCount: data.vehicle_count || 0,
+              chassisNo: data.chassis_no || "",
+              motorNo: data.motor_no || "",
+              batteryNo: data.battery_no || "",
+              manufacturerInvNo: data.manufacturer_inv_no || "",
+              batteryModel: data.battery_model || "",
+              batteryCount: data.battery_count || 0,
+              salesCount: data.sales_count || 0,
+              closingStock: data.closing_stock || 0,
+              createdAt: new Date(data.created_at).toLocaleDateString(),
+            };
+            setItems((prev) => [...prev, created].sort((a, b) => a.slNo - b.slNo));
+          } catch (supabaseError: any) {
+            console.warn("Supabase insert failed, falling back to localStorage:", supabaseError?.message);
+            const created: InventoryItem = {
+              id: `inventory_${Date.now()}`,
+              createdAt: new Date().toLocaleDateString(),
+              ...payload,
+            };
+            persistLocal([...items, created].sort((a, b) => a.slNo - b.slNo));
+          }
         } else {
           const created: InventoryItem = {
             id: `inventory_${Date.now()}`,
@@ -414,8 +428,12 @@ export default function Inventory() {
             if (employeeSession) {
               userId = employeeSession.employeeId;
             } else {
-              const { data: userData } = await supabase.auth.getUser();
-              userId = userData.user?.id;
+              try {
+                const { data: userData } = await supabase.auth.getUser();
+                userId = userData.user?.id;
+              } catch (err) {
+                console.warn("Could not fetch Supabase user:", err);
+              }
             }
 
             if (!userId) {
