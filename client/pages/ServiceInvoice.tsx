@@ -968,6 +968,9 @@ export default function ServiceInvoice() {
             <div className="border border-border rounded-lg p-6 space-y-6">
               <div>
                 <h3 className="text-lg font-semibold mb-4">Payment Details (Split Payments)</h3>
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
+                  ℹ️ Track payments made for this invoice by entering split payment details below.
+                </div>
                 <SplitPaymentForm
                   totalAmount={calculateTotal(form.products, form.labourCharges, form.gstEnabled) || 0}
                   initialPayments={form.splitPayments}
@@ -975,11 +978,11 @@ export default function ServiceInvoice() {
                 />
               </div>
 
-              {form.splitPayments.length > 0 && (
+              {form.splitPayments.some(p => p.amount > 0) && (
                 <div className="border-t border-border pt-6">
                   <h4 className="text-md font-semibold mb-4">Payment History</h4>
                   <PaymentHistoryDisplay
-                    payments={form.splitPayments}
+                    payments={form.splitPayments.filter(p => p.amount > 0)}
                     totalAmount={calculateTotal(form.products, form.labourCharges, form.gstEnabled) || 0}
                   />
                 </div>

@@ -25,13 +25,20 @@ export async function createTransaction(
   if (!supabase) return null;
 
   try {
+    // Only create transaction if there are valid payments (amount > 0)
+    const validPayments = splitPayments.filter((p) => p.amount > 0);
+    if (validPayments.length === 0) {
+      console.warn("No valid payments to create transaction");
+      return null;
+    }
+
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user?.id) {
       console.error("User not authenticated for transaction creation");
       return null;
     }
 
-    const paidAmount = splitPayments.reduce((sum, p) => sum + p.amount, 0);
+    const paidAmount = validPayments.reduce((sum, p) => sum + p.amount, 0);
 
     // Create transaction
     const { data: transaction, error: txError } = await supabase
@@ -53,7 +60,7 @@ export async function createTransaction(
     }
 
     // Create split payments
-    const paymentsToInsert = splitPayments.map((payment) => ({
+    const paymentsToInsert = validPayments.map((payment) => ({
       transaction_id: transaction.id,
       amount: payment.amount,
       mode_of_payment: payment.modeOfPayment,
@@ -123,7 +130,9 @@ export async function updateTransaction(
   if (!supabase) return null;
 
   try {
-    const totalPaid = splitPayments.reduce((sum, p) => sum + p.amount, 0);
+    // Filter out payments with 0 amounts
+    const validPayments = splitPayments.filter((p) => p.amount > 0);
+    const totalPaid = validPayments.reduce((sum, p) => sum + p.amount, 0);
 
     // Get current transaction to check total amount
     const { data: transaction } = await supabase
@@ -137,15 +146,17 @@ export async function updateTransaction(
     // Delete old split payments
     await supabase.from("split_payments").delete().eq("transaction_id", transactionId);
 
-    // Insert new split payments
-    const paymentsToInsert = splitPayments.map((payment) => ({
-      transaction_id: transactionId,
-      amount: payment.amount,
-      mode_of_payment: payment.modeOfPayment,
-      payment_date: payment.paymentDate,
-    }));
+    // Insert new split payments only if there are valid payments
+    if (validPayments.length > 0) {
+      const paymentsToInsert = validPayments.map((payment) => ({
+        transaction_id: transactionId,
+        amount: payment.amount,
+        mode_of_payment: payment.modeOfPayment,
+        payment_date: payment.paymentDate,
+      }));
 
-    await supabase.from("split_payments").insert(paymentsToInsert);
+      await supabase.from("split_payments").insert(paymentsToInsert);
+    }
 
     // Update transaction status
     const { data, error } = await supabase
@@ -216,11 +227,14 @@ export async function getSplitPaymentsByReference(
     }
 
     if (data && data.split_payments && data.split_payments.length > 0) {
-      return data.split_payments.map((sp: any) => ({
-        amount: sp.amount,
-        modeOfPayment: sp.mode_of_payment,
-        paymentDate: sp.payment_date,
-      }));
+      const payments = data.split_payments
+        .map((sp: any) => ({
+          amount: sp.amount,
+          modeOfPayment: sp.mode_of_payment,
+          paymentDate: sp.payment_date,
+        }))
+        .filter((p) => p.amount > 0);
+      return payments;
     }
 
     return [];

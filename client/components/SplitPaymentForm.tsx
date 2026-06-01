@@ -63,6 +63,8 @@ export function SplitPaymentForm({
     }
   };
 
+  const hasValidPayments = payments.some((p) => p.amount > 0);
+
   return (
     <div className="space-y-4">
       <div className="bg-gray-50 p-4 rounded-lg">
@@ -95,6 +97,11 @@ export function SplitPaymentForm({
 
       <div className="space-y-3">
         <h3 className="font-semibold text-sm">Payment Breakdown</h3>
+        {!hasValidPayments && (
+          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700">
+            ⚠️ No payment amounts entered. Enter at least one payment amount to record split payments.
+          </div>
+        )}
         {payments.map((payment, index) => (
           <div key={index} className="flex gap-3 items-end bg-white p-3 rounded-lg border border-gray-200">
             <div className="flex-1">
