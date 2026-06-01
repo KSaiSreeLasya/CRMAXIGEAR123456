@@ -348,7 +348,7 @@ export default function Projects() {
     setEstimationSplitPayments([]);
   };
 
-  const handleCreateProject = async (newProject: Omit<Project, "id" | "createdAt">) => {
+  const handleCreateProject = async (newProject: Omit<Project, "id" | "createdAt">, splitPayments?: SplitPayment[]) => {
     try {
       const createdProject: Project = {
         id: `project_${Date.now()}`,
@@ -368,6 +368,7 @@ export default function Projects() {
         amount: newProject.amount,
         modeOfPayment: newProject.modeOfPayment,
         leadSource: newProject.leadSource,
+        splitPayments: splitPayments,
         createdAt: new Date().toLocaleDateString(),
       };
 
@@ -423,8 +424,19 @@ export default function Projects() {
             amount: data[0].amount,
             modeOfPayment: data[0].mode_of_payment || "Cash",
             leadSource: data[0].lead_source || "",
+            splitPayments: splitPayments,
             createdAt: new Date(data[0].created_at).toLocaleDateString(),
           };
+
+          // Create transaction with split payments
+          if (splitPayments && splitPayments.length > 0) {
+            await createTransaction(
+              "project",
+              data[0].id,
+              newProject.amount,
+              splitPayments
+            );
+          }
 
           setProjects([dbProject, ...projects]);
           setIsModalOpen(false);

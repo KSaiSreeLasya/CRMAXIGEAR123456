@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import type { Project } from "@/pages/Projects";
 import { supabase } from "@/lib/supabase";
+import { SplitPaymentForm, type SplitPayment } from "@/components/SplitPaymentForm";
 
 interface CreateProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateProject: (project: Omit<Project, "id" | "createdAt">) => Promise<void>;
+  onCreateProject: (project: Omit<Project, "id" | "createdAt">, splitPayments?: SplitPayment[]) => Promise<void>;
 }
 
 export default function CreateProjectModal({
@@ -39,6 +40,7 @@ export default function CreateProjectModal({
   const [modelLookupMessage, setModelLookupMessage] = useState("");
   const [availableChassisNumbers, setAvailableChassisNumbers] = useState<string[]>([]);
   const [showChassisDropdown, setShowChassisDropdown] = useState(false);
+  const [splitPayments, setSplitPayments] = useState<SplitPayment[]>([]);
 
   useEffect(() => {
     if (isOpen) {
@@ -125,7 +127,7 @@ export default function CreateProjectModal({
       amount: parseFloat(formData.amount),
       modeOfPayment: formData.modeOfPayment,
       leadSource: formData.leadSource,
-    });
+    }, splitPayments);
 
     // Reset form
     setFormData({
@@ -146,6 +148,7 @@ export default function CreateProjectModal({
       modeOfPayment: "Cash",
       leadSource: "",
     });
+    setSplitPayments([]);
   };
 
   const handleModelLookup = async (modelNoInput?: string) => {
@@ -575,6 +578,16 @@ export default function CreateProjectModal({
                   className="w-full px-4 py-2 border border-border rounded-lg bg-background transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
+            </div>
+
+            {/* Split Payment Section */}
+            <div className="border border-border rounded-lg p-6">
+              <h3 className="font-semibold text-sm mb-4">Payment Breakdown (Split Payments)</h3>
+              <SplitPaymentForm
+                totalAmount={parseFloat(formData.amount as string) || 0}
+                initialPayments={splitPayments}
+                onPaymentsChange={(payments) => setSplitPayments(payments)}
+              />
             </div>
 
             {/* Form Actions */}
