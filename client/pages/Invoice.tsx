@@ -202,10 +202,11 @@ export default function Invoice() {
     // Dynamically import html2pdf to avoid SSR issues
     import("html2pdf.js").then((html2pdfModule) => {
       const html2pdf = html2pdfModule.default;
-
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-").split("T").join("_").slice(0, -5);
+      const cleanInvoiceNo = invoiceNo.replace(/\//g, "-");
       const opt = {
         margin: 0,
-        filename: `invoice-${invoiceNo.replace(/\//g, "-")}.pdf`,
+        filename: `${cleanInvoiceNo}_${timestamp}.pdf`,
         image: { type: "png" as const, quality: 0.98 },
         html2canvas: {
           scale: 2,

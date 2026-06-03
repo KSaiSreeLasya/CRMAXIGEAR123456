@@ -543,10 +543,11 @@ export default function ServiceInvoice() {
 
     import("html2pdf.js").then((html2pdfModule) => {
       const html2pdf = html2pdfModule.default;
-
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-").split("T").join("_").slice(0, -5);
+      const cleanInvoiceNo = invoice.serviceInvoiceNo.replace(/\//g, "-");
       const opt = {
         margin: 0,
-        filename: `service-invoice-${invoice.serviceInvoiceNo}.pdf`,
+        filename: `${cleanInvoiceNo}_${timestamp}.pdf`,
         image: { type: "png" as const, quality: 0.98 },
         html2canvas: {
           scale: 2,

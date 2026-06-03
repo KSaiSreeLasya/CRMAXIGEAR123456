@@ -127,10 +127,11 @@ export default function EstimationSlip() {
 
     import("html2pdf.js").then((html2pdfModule) => {
       const html2pdf = html2pdfModule.default;
-
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-").split("T").join("_").slice(0, -5);
+      const cleanSlipNo = estimation.estimationSlipNo.replace(/\//g, "-");
       const opt = {
         margin: 0,
-        filename: `estimation-slip-${estimation.estimationSlipNo}.pdf`,
+        filename: `${cleanSlipNo}_${timestamp}.pdf`,
         image: { type: "png" as const, quality: 0.98 },
         html2canvas: {
           scale: 2,
