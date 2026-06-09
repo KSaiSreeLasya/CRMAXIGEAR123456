@@ -11,6 +11,7 @@ import { ImportExport } from "@/components/ImportExport";
 import { SplitPaymentForm, type SplitPayment } from "@/components/SplitPaymentForm";
 import { PaymentHistoryDisplay } from "@/components/PaymentHistoryDisplay";
 import { createTransaction, getTransactionByReference, getSplitPaymentsByReference, updateTransaction, ensureSplitPaymentsMigrated } from "@/lib/transactions";
+import { deductInventoryForSale, restoreInventoryForDeletedSale } from "@/lib/inventory";
 
 interface EstimationRecord {
   id: string;
@@ -478,6 +479,11 @@ export default function Projects() {
             }
           }
 
+          // Deduct inventory for this sale if chassis number is provided
+          if (newProject.chassisNo) {
+            await deductInventoryForSale(newProject.modelNo, newProject.chassisNo);
+          }
+
           setProjects([dbProject, ...projects]);
           setIsModalOpen(false);
           return;
@@ -491,6 +497,12 @@ export default function Projects() {
       const updatedProjects = [createdProject, ...projects];
       localStorage.setItem("crm_projects", JSON.stringify(updatedProjects));
       setProjects(updatedProjects);
+
+      // Deduct inventory for this sale if chassis number is provided
+      if (newProject.chassisNo) {
+        await deductInventoryForSale(newProject.modelNo, newProject.chassisNo);
+      }
+
       setIsModalOpen(false);
     } catch (error: any) {
       const errorMessage = error?.message || error?.error_description || JSON.stringify(error);
@@ -501,6 +513,10 @@ export default function Projects() {
 
   const handleUpdateProject = async (id: string, updatedData: Omit<Project, "id" | "createdAt">) => {
     try {
+      // Get the original project to track chassis changes
+      const originalProject = projects.find((p) => p.id === id);
+      const chassisChanged = originalProject && originalProject.chassisNo !== updatedData.chassisNo;
+
       if (supabase) {
         try {
           const { error } = await supabase
@@ -555,6 +571,18 @@ export default function Projects() {
       setProjects(updatedProjects);
       localStorage.setItem("crm_projects", JSON.stringify(updatedProjects));
 
+      // Handle inventory changes if chassis was modified
+      if (chassisChanged && originalProject) {
+        if (originalProject.chassisNo) {
+          // Restore the old chassis to inventory
+          await restoreInventoryForDeletedSale(originalProject.modelNo, originalProject.chassisNo);
+        }
+        if (updatedData.chassisNo) {
+          // Deduct the new chassis from inventory
+          await deductInventoryForSale(updatedData.modelNo, updatedData.chassisNo);
+        }
+      }
+
       setIsEditModalOpen(false);
       setEditingProject(null);
     } catch (error: any) {
@@ -566,6 +594,9 @@ export default function Projects() {
 
   const handleDeleteProject = async (id: string) => {
     try {
+      // Find the project to get its details before deletion
+      const projectToDelete = projects.find((p) => p.id === id);
+
       if (supabase) {
         try {
           const { error } = await supabase
@@ -584,6 +615,11 @@ export default function Projects() {
       const updatedProjects = projects.filter((p) => p.id !== id);
       setProjects(updatedProjects);
       localStorage.setItem("crm_projects", JSON.stringify(updatedProjects));
+
+      // Restore inventory for this deleted sale if chassis number exists
+      if (projectToDelete && projectToDelete.chassisNo) {
+        await restoreInventoryForDeletedSale(projectToDelete.modelNo, projectToDelete.chassisNo);
+      }
     } catch (error: any) {
       const errorMessage = error?.message || error?.error_description || JSON.stringify(error);
       console.error("Error deleting project:", errorMessage);
