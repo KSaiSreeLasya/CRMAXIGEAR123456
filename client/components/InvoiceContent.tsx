@@ -174,6 +174,12 @@ export default function InvoiceContent({
             <span className="font-bold text-gray-800">Contact No:</span>{" "}
             <span className="text-gray-700">{project.contactNo}</span>
           </p>
+          {project.gstNo && (
+            <p>
+              <span className="font-bold text-gray-800">GST No:</span>{" "}
+              <span className="text-gray-700">{project.gstNo}</span>
+            </p>
+          )}
         </div>
       </div>
 

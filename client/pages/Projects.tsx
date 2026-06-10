@@ -58,6 +58,7 @@ export interface Project {
   amount: number;
   modeOfPayment: string;
   leadSource: string;
+  gstNo?: string;
   splitPayments?: SplitPayment[];
   createdAt: string;
 }

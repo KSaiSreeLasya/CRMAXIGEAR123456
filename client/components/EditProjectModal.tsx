@@ -36,6 +36,7 @@ export default function EditProjectModal({
     amount: "",
     modeOfPayment: "Cash",
     leadSource: "",
+    gstNo: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -64,6 +65,7 @@ export default function EditProjectModal({
         amount: project.amount.toString(),
         modeOfPayment: project.modeOfPayment || "Cash",
         leadSource: project.leadSource || "",
+        gstNo: project.gstNo || "",
       });
 
       // Load fresh split payments from database
@@ -157,6 +159,7 @@ export default function EditProjectModal({
       amount: parseFloat(formData.amount),
       modeOfPayment: formData.modeOfPayment,
       leadSource: formData.leadSource,
+      gstNo: formData.gstNo,
       splitPayments: splitPayments,
     });
 
@@ -583,6 +586,18 @@ export default function EditProjectModal({
                   className="w-full px-4 py-2 border border-border rounded-lg bg-background transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2">GST No.</label>
+              <input
+                type="text"
+                name="gstNo"
+                value={formData.gstNo}
+                onChange={handleChange}
+                placeholder="e.g. 36ACJFA4386L1ZW"
+                className="w-full px-4 py-2 border border-border rounded-lg bg-background transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+              />
             </div>
 
             {/* Split Payment Section */}
