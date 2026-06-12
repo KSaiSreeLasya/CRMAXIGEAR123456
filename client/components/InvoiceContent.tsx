@@ -7,6 +7,7 @@ interface InvoiceContentProps {
   gstType: "igst" | "cgst-sgst";
   placeOfSupply: string;
   splitPayments?: SplitPayment[];
+  showSplitPaymentDetails?: boolean;
   forPrint?: boolean;
 }
 
@@ -41,6 +42,7 @@ export default function InvoiceContent({
   gstType,
   placeOfSupply,
   splitPayments = [],
+  showSplitPaymentDetails = false,
   forPrint = false,
 }: InvoiceContentProps) {
   // Amount saved in CRM is GST-inclusive. Invoice shows taxable value + GST split.
@@ -297,7 +299,7 @@ export default function InvoiceContent({
       </div>
 
       {/* Payment Breakdown */}
-      {splitPayments && splitPayments.length > 0 && (
+      {showSplitPaymentDetails && splitPayments && splitPayments.length > 0 && (
         <div className="mb-4 grid grid-cols-2 gap-6">
           <div></div>
           <div className="space-y-2 bg-blue-50 p-4 rounded-lg border-2 border-blue-200">

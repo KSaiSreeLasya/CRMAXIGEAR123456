@@ -17,6 +17,7 @@ export default function Invoice() {
   const [gstType, setGstType] = useState<"igst" | "cgst-sgst">("cgst-sgst");
   const [placeOfSupply, setPlaceOfSupply] = useState<string>("TG");
   const [splitPayments, setSplitPayments] = useState<SplitPayment[]>([]);
+  const [showSplitPaymentDetails, setShowSplitPaymentDetails] = useState(false);
   const settingsKey = projectId ? `crm_invoice_settings_${projectId}` : null;
 
   useEffect(() => {
@@ -40,15 +41,18 @@ export default function Invoice() {
         invoiceNo?: string;
         gstType?: "igst" | "cgst-sgst";
         placeOfSupply?: string;
+        showSplitPaymentDetails?: boolean;
       };
       setInvoiceNo(parsed.invoiceNo || getNextInvoiceNumber());
       setGstType(parsed.gstType === "igst" || parsed.gstType === "cgst-sgst" ? parsed.gstType : "cgst-sgst");
       setPlaceOfSupply(parsed.placeOfSupply || "TG");
+      setShowSplitPaymentDetails(parsed.showSplitPaymentDetails ?? false);
     } catch (error) {
       console.error("Error loading saved invoice settings:", error);
       setInvoiceNo(getNextInvoiceNumber());
       setGstType("cgst-sgst");
       setPlaceOfSupply("TG");
+      setShowSplitPaymentDetails(false);
     }
   }, [settingsKey]);
 
@@ -61,12 +65,13 @@ export default function Invoice() {
           invoiceNo,
           gstType,
           placeOfSupply,
+          showSplitPaymentDetails,
         }),
       );
     } catch (error) {
       console.error("Error saving invoice settings:", error);
     }
-  }, [settingsKey, invoiceNo, gstType, placeOfSupply]);
+  }, [settingsKey, invoiceNo, gstType, placeOfSupply, showSplitPaymentDetails]);
 
   const loadProject = async () => {
     setIsLoading(true);
@@ -323,6 +328,19 @@ export default function Invoice() {
                   />
                 )}
               </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <input
+                  type="checkbox"
+                  id="showSplitPaymentDetails"
+                  checked={showSplitPaymentDetails}
+                  onChange={(e) => setShowSplitPaymentDetails(e.target.checked)}
+                  className="w-4 h-4 border border-gray-300 rounded cursor-pointer"
+                />
+                <label htmlFor="showSplitPaymentDetails" className="text-sm font-medium text-gray-700 cursor-pointer">
+                  Display split payment details in invoice
+                </label>
+              </div>
             </div>
           </div>
 
@@ -332,6 +350,8 @@ export default function Invoice() {
             invoiceNo={invoiceNo}
             gstType={gstType}
             placeOfSupply={placeOfSupply}
+            splitPayments={splitPayments}
+            showSplitPaymentDetails={showSplitPaymentDetails}
             forPrint={false}
           />
         </div>
