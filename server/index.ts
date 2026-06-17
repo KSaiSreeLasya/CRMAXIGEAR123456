@@ -25,6 +25,10 @@ export function createServer() {
   app.get("/api/demo", handleDemo);
   app.post("/api/admin/setup-employee", handleCreateAdminEmployee);
 
+  // Serve static files from public directory (robots.txt, sitemap.xml, etc.)
+  const publicDir = path.join(__dirname, "../public");
+  app.use(express.static(publicDir));
+
   // Serve static files from the SPA build directory
   const spaDir = path.join(__dirname, "../dist/spa");
   app.use(express.static(spaDir));

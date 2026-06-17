@@ -148,11 +148,21 @@ export default function AdminEmployees() {
           });
 
           if (!response.ok) {
-            const errorData = await response.json();
+            let errorData;
+            try {
+              errorData = await response.json();
+            } catch {
+              throw new Error(`Failed to create employee (${response.status}: ${response.statusText})`);
+            }
             throw new Error(errorData.error || "Failed to create employee");
           }
 
-          const data = await response.json();
+          let data;
+          try {
+            data = await response.json();
+          } catch {
+            throw new Error("Invalid response from server");
+          }
           if (!data.success || !data.employee) {
             throw new Error("Employee was not created.");
           }

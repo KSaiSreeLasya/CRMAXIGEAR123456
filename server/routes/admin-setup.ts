@@ -3,14 +3,14 @@ import { createClient } from "@supabase/supabase-js";
 import ws from "ws";
 
 export const handleCreateAdminEmployee: RequestHandler = async (req, res) => {
+  res.setHeader("Content-Type", "application/json");
   try {
     const { fullName, email, password, role = "Admin" } = req.body;
 
     if (!fullName || !email || !password) {
-      res.status(400).json({
+      return res.status(400).json({
         error: "Missing required fields: fullName, email, password",
       });
-      return;
     }
 
     const supabaseUrl = process.env.VITE_SUPABASE_URL;
@@ -18,10 +18,9 @@ export const handleCreateAdminEmployee: RequestHandler = async (req, res) => {
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
-      res.status(500).json({
+      return res.status(500).json({
         error: "Supabase configuration missing",
       });
-      return;
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey, {
@@ -58,22 +57,20 @@ export const handleCreateAdminEmployee: RequestHandler = async (req, res) => {
 
       if (insertError) {
         console.error("Error inserting employee:", insertError);
-        res.status(500).json({
+        return res.status(500).json({
           error: `Failed to create employee: ${insertError.message}`,
           code: insertError.code,
         });
-        return;
       }
 
       const employee = insertData?.[0];
       if (!employee) {
-        res.status(500).json({
+        return res.status(500).json({
           error: "Employee was not created",
         });
-        return;
       }
 
-      res.json({
+      return res.json({
         success: true,
         employee: {
           id: employee.id,
@@ -83,18 +80,16 @@ export const handleCreateAdminEmployee: RequestHandler = async (req, res) => {
           createdAt: employee.created_at,
         },
       });
-      return;
     }
 
     const employee = data || data?.[0];
     if (!employee) {
-      res.status(500).json({
+      return res.status(500).json({
         error: "Employee was not created",
       });
-      return;
     }
 
-    res.json({
+    return res.json({
       success: true,
       employee: {
         id: employee.id,
@@ -104,7 +99,6 @@ export const handleCreateAdminEmployee: RequestHandler = async (req, res) => {
         createdAt: employee.created_at,
       },
     });
-    return;
   } catch (err: any) {
     console.error("Admin setup error:", err);
     res.status(500).json({
