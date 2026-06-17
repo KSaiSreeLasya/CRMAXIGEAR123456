@@ -86,7 +86,7 @@ export const handleCreateAdminEmployee: RequestHandler = async (req, res) => {
       return;
     }
 
-    const employee = data?.[0];
+    const employee = data || data?.[0];
     if (!employee) {
       res.status(500).json({
         error: "Employee was not created",
