@@ -202,17 +202,23 @@ export default function DealerInvoice() {
 
     // Calculate GST per product
     let totalGst = 0;
+    const gstBreakdown: { rate: number; amount: number }[] = [];
+
     products.forEach((product) => {
       const productLineTotal = product.amount * product.unit;
-      const gstRate = (product.gstRate || 18) / 100;
-      totalGst += Math.round(productLineTotal * gstRate);
+      const rate = product.gstRate || 18;
+      const gstRate = rate / 100;
+      const gstAmount = Math.round(productLineTotal * gstRate);
+      totalGst += gstAmount;
+      gstBreakdown.push({ rate, amount: gstAmount });
     });
 
     // Add labour GST if applicable
     const labourGstRate = 0.18; // Default to 18% for labour
-    totalGst += Math.round(labour * labourGstRate);
+    const labourGst = labour > 0 ? Math.round(labour * labourGstRate) : 0;
+    totalGst += labourGst;
 
-    return { productTotal, taxableTotal, gstAmount: totalGst, total: taxableTotal + totalGst };
+    return { productTotal, taxableTotal, gstAmount: totalGst, total: taxableTotal + totalGst, gstBreakdown, labourGst };
   };
 
   const saveInvoice = async (finalSplitPayments: SplitPayment[] = []) => {
@@ -592,6 +598,15 @@ export default function DealerInvoice() {
             {/* Products Section */}
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-4">Products</h3>
+              <div className="mb-2 flex gap-2 items-center text-xs font-semibold text-gray-600 px-2">
+                <div className="flex-1">Product</div>
+                <div className="flex-1">Description</div>
+                <div className="w-20 text-right">Unit</div>
+                <div className="w-24 text-right">Amount</div>
+                <div className="w-20 text-center">GST Rate</div>
+                <div className="w-20 text-right">Total</div>
+                <div className="w-20 text-right">GST Amt</div>
+              </div>
               <div className="space-y-3">
                 {form.products.map((product, idx) => (
                   <div key={product.id} className="flex gap-2 items-end">
@@ -652,8 +667,11 @@ export default function DealerInvoice() {
                       <option value="5">GST 5%</option>
                       <option value="18">GST 18%</option>
                     </select>
-                    <span className="w-24 px-3 py-2 text-sm font-medium">
+                    <span className="w-20 px-3 py-2 text-sm font-medium text-right">
                       ₹{(product.amount * product.unit).toFixed(2)}
+                    </span>
+                    <span className="w-20 px-3 py-2 text-sm font-medium text-right text-blue-600">
+                      ₹{((product.amount * product.unit * (product.gstRate || 18)) / 100).toFixed(2)}
                     </span>
                     {form.products.length > 1 && (
                       <Button
@@ -694,7 +712,7 @@ export default function DealerInvoice() {
             {form.products.length > 0 && (
               <div className="bg-muted p-4 rounded-md mb-6">
                 {(() => {
-                  const { productTotal, taxableTotal, gstAmount, total } =
+                  const { productTotal, taxableTotal, gstAmount, total, gstBreakdown, labourGst } =
                     calculateInvoiceTotal(form.products, form.labourCharges);
                   return (
                     <div className="space-y-2 text-sm">
@@ -714,9 +732,19 @@ export default function DealerInvoice() {
                       </div>
                       {form.gstEnabled && (
                         <>
-                          <div className="flex justify-between">
-                            <span>GST (18%):</span>
-                            <span>₹{gstAmount.toFixed(2)}</span>
+                          <div className="space-y-1 pl-4">
+                            {gstBreakdown?.map((breakdown, idx) => (
+                              <div key={idx} className="flex justify-between text-xs">
+                                <span>GST ({breakdown.rate}%):</span>
+                                <span>₹{breakdown.amount.toFixed(2)}</span>
+                              </div>
+                            ))}
+                            {labourGst > 0 && (
+                              <div className="flex justify-between text-xs">
+                                <span>Labour GST (18%):</span>
+                                <span>₹{labourGst.toFixed(2)}</span>
+                              </div>
+                            )}
                           </div>
                           <div className="flex justify-between font-semibold border-t pt-2">
                             <span>Total:</span>
