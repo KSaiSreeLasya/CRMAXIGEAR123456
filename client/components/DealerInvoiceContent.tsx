@@ -280,10 +280,6 @@ export default function DealerInvoiceContent({
             <span className="font-semibold text-gray-900">₹{labourCharges.toFixed(2)}</span>
           </div>
         )}
-        <div className="border-t border-gray-300 pt-2 flex justify-between text-sm">
-          <span className="font-medium text-gray-700">Taxable Value:</span>
-          <span className="font-semibold text-gray-900">₹{taxableAmount.toFixed(2)}</span>
-        </div>
         {gstEnabled && (
           <div className="border-t border-gray-300 pt-2 flex justify-between font-bold text-base">
             <span className="text-gray-900">TOTAL AMOUNT:</span>
