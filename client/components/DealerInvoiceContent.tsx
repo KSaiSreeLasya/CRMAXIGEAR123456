@@ -234,7 +234,10 @@ export default function DealerInvoiceContent({
                 {product.gstRate || 18}%
               </td>
               <td className="px-3 py-2 text-right text-gray-900 font-medium">
-                {roundCurrency(product.amount * product.unit).toFixed(2)}
+                {roundCurrency(
+                  product.amount * product.unit +
+                  (product.amount * product.unit * ((product.gstRate || 18) / 100))
+                ).toFixed(2)}
               </td>
             </tr>
           ))}
