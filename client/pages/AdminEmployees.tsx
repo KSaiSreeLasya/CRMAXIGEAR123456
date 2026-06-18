@@ -135,49 +135,38 @@ export default function AdminEmployees() {
         persistLocalEmployees(next);
       } else {
         if (supabase) {
-          // Use server endpoint to handle employee creation securely
-          const response = await fetch("/api/admin/setup-employee", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              fullName: form.fullName.trim(),
+          // Create employee directly in Supabase (for static hosting)
+          const hashedPassword = btoa(form.password.trim());
+
+          const { data: insertData, error: insertError } = await supabase
+            .from("employees")
+            .insert({
+              full_name: form.fullName.trim(),
               email: form.email.trim().toLowerCase(),
-              password: form.password.trim(),
+              password_hash: hashedPassword,
+              phone: form.phone.trim() || null,
               role: form.role.trim() || "Employee",
-            }),
-          });
+              is_active: true,
+            })
+            .select();
 
-          if (!response.ok) {
-            let errorData;
-            try {
-              errorData = await response.json();
-            } catch {
-              throw new Error(`Failed to create employee (${response.status}: ${response.statusText})`);
-            }
-            throw new Error(errorData.error || "Failed to create employee");
+          if (insertError) {
+            throw new Error(`Failed to create employee: ${insertError.message}`);
           }
 
-          let data;
-          try {
-            data = await response.json();
-          } catch {
-            throw new Error("Invalid response from server");
-          }
-          if (!data.success || !data.employee) {
+          if (!insertData || insertData.length === 0) {
             throw new Error("Employee was not created.");
           }
 
-          const row = data.employee;
+          const row = insertData[0];
           const created: Employee = {
             id: row.id,
-            fullName: row.fullName,
+            fullName: row.full_name,
             email: row.email || "",
             phone: row.phone || "",
-            role: row.role || "",
-            isActive: true,
-            createdAt: row.createdAt
-              ? new Date(row.createdAt).toLocaleDateString()
-              : new Date().toLocaleDateString(),
+            role: row.role || "Employee",
+            isActive: row.is_active ?? true,
+            createdAt: new Date(row.created_at).toLocaleDateString(),
           };
           setEmployees((prev) => [created, ...prev]);
         } else {
