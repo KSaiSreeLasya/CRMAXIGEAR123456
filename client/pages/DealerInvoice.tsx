@@ -268,7 +268,7 @@ export default function DealerInvoice() {
         try {
           if (editingId) {
             const { error } = await supabase
-              .from("dealer_invoices")
+              .from("dealers_invoices")
               .update(invoiceRecord)
               .eq("id", invoiceId);
 
@@ -278,7 +278,7 @@ export default function DealerInvoice() {
             }
           } else {
             const { error } = await supabase
-              .from("dealer_invoices")
+              .from("dealers_invoices")
               .insert([invoiceRecord]);
 
             if (error) {
