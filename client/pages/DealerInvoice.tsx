@@ -834,8 +834,8 @@ export default function DealerInvoice() {
                             )}
                           </div>
                           <div className="flex justify-between font-semibold border-t pt-2">
-                            <span>Total:</span>
-                            <span>₹{total.toFixed(2)}</span>
+                            <span>TOTAL AMOUNT:</span>
+                            <span className="text-green-600">₹{total.toFixed(2)}</span>
                           </div>
                         </>
                       )}
