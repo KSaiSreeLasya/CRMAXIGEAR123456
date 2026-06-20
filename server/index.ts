@@ -5,6 +5,12 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { handleDemo } from "./routes/demo";
 import { handleCreateAdminEmployee } from "./routes/admin-setup";
+import {
+  handleGetDeliveries,
+  handleCreateDelivery,
+  handleUpdateDelivery,
+  handleDeleteDelivery,
+} from "./routes/deliveries";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -24,6 +30,12 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
   app.post("/api/admin/setup-employee", handleCreateAdminEmployee);
+
+  // Delivery routes
+  app.get("/api/deliveries", handleGetDeliveries);
+  app.post("/api/deliveries", handleCreateDelivery);
+  app.put("/api/deliveries/:id", handleUpdateDelivery);
+  app.delete("/api/deliveries/:id", handleDeleteDelivery);
 
   // Serve static files from public directory (robots.txt, sitemap.xml, etc.)
   const publicDir = path.join(__dirname, "../public");
