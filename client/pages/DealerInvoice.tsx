@@ -147,29 +147,55 @@ export default function DealerInvoice() {
     }
   }, [editingId]);
 
-  const loadInvoices = async () => {
-    setIsLoading(true);
-    try {
-      if (supabase) {
-        try {
-          const { data } = await supabase
-            .from("dealers_invoices")
-            .select("*");
-          if (data) {
-            setInvoices(data);
-            return;
-          }
-        } catch (error) {
-          console.warn("Supabase dealers_invoices fetch failed, using localStorage");
-        }
-      }
+const loadInvoices = async () => {
+  setIsLoading(true);
 
-      const saved = localStorage.getItem("crm_dealer_invoices");
-      setInvoices(saved ? JSON.parse(saved) : []);
-    } finally {
-      setIsLoading(false);
+  try {
+    if (!supabase) {
+      console.error("Supabase client not initialized");
+      return;
     }
-  };
+
+    const { data, error } = await supabase
+      .from("dealers_invoices")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    console.log("Supabase Data:", data);
+    console.log("Supabase Error:", error);
+
+    if (error) throw error;
+
+    const mappedInvoices: DealerInvoiceRecord[] = (data || []).map((row: any) => ({
+      id: row.id,
+      dealerInvoiceNo: row.invoice_number,
+      dealerName: row.dealer_name,
+      dealerId: row.dealer_id,
+      contactNo: row.contact_no || "",
+      location: row.location || "",
+      invoiceDate: row.invoice_date,
+      dueDate: row.due_date || "",
+      poNumber: row.purchase_order_no || "",
+      sentTo: row.sent_to || "",
+      shipTo: row.ship_to || "",
+      products: [],
+      total: Number(row.total_amount || 0),
+      labourCharges: Number(row.labour_charges || 0),
+      gstEnabled: row.gst_enabled ?? true,
+      gstAmount: Number(row.total_gst_amount || 0),
+      modeOfPayment: row.mode_of_payment || "",
+      leadSource: row.lead_source || "",
+      createdAt: row.created_at,
+    }));
+
+    setInvoices(mappedInvoices);
+  } catch (error) {
+    console.error("Load Invoice Error:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const loadDealers = async () => {
     setIsLoadingDealers(true);
@@ -234,11 +260,11 @@ export default function DealerInvoice() {
         form.labourCharges
       );
 
-      const invoiceId = editingId || `dealer_inv_${Date.now()}`;
+      const invoiceId = editingId || crypto.randomUUID();
       const createdAtTime = editingId ? invoices.find(i => i.id === editingId)?.createdAt || new Date().toISOString() : new Date().toISOString();
 
       const invoiceRecord = {
-        id: invoiceId,
+      
         invoice_number: form.dealerInvoiceNo,
         invoice_date: form.invoiceDate,
         due_date: form.dueDate || null,
@@ -257,29 +283,49 @@ export default function DealerInvoice() {
         total_gst_amount: gstAmount,
         total_amount: total,
         payment_status: "pending",
-        created_at: createdAtTime,
-        updated_at: new Date().toISOString(),
+        
+        
         is_deleted: false,
       };
 
-      if (supabase && !isLoading) {
-        try {
-          if (editingId) {
-            await supabase
-              .from("dealers_invoices")
-              .update(invoiceRecord)
-              .eq("id", invoiceId);
-          } else {
-            await supabase
-              .from("dealers_invoices")
-              .insert([invoiceRecord]);
-          }
+      if (supabase) {
+      try {
+      let result;
 
-          alert("Invoice saved to Supabase successfully!");
-        } catch (error) {
-          console.warn("Supabase save failed, using localStorage:", error);
-        }
+
+      if (editingId) {
+        result = await supabase
+          .from("dealers_invoices")
+          .update(invoiceRecord)
+          .eq("id", invoiceId)
+          .select();
       }
+      else {
+        result = await supabase
+          .from("dealers_invoices")
+          .insert([invoiceRecord])
+          .select();
+}
+
+      console.log("Insert/Update Result:", result.data);
+      console.log("Insert/Update Error:", result.error);
+
+      if (result.error) {
+        throw result.error;
+}
+
+      alert("Invoice saved to Supabase successfully!");
+
+      await loadInvoices();
+
+
+}     catch (error) {
+      console.error("Supabase Save Error:", error);
+      alert(`Supabase Error: ${JSON.stringify(error)}`);
+}
+}
+
+
 
       // Always update localStorage
       const record: DealerInvoiceRecord = {
