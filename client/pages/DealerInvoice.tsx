@@ -166,26 +166,50 @@ const loadInvoices = async () => {
 
     if (error) throw error;
 
-    const mappedInvoices: DealerInvoiceRecord[] = (data || []).map((row: any) => ({
-      id: row.id,
-      dealerInvoiceNo: row.invoice_number,
-      dealerName: row.dealer_name,
-      dealerId: row.dealer_id,
-      contactNo: row.contact_no || "",
-      location: row.location || "",
-      invoiceDate: row.invoice_date,
-      dueDate: row.due_date || "",
-      poNumber: row.purchase_order_no || "",
-      sentTo: row.sent_to || "",
-      shipTo: row.ship_to || "",
-      products: [],
-      total: Number(row.total_amount || 0),
-      labourCharges: Number(row.labour_charges || 0),
-      gstEnabled: row.gst_enabled ?? true,
-      gstAmount: Number(row.total_gst_amount || 0),
-      modeOfPayment: row.mode_of_payment || "",
-      leadSource: row.lead_source || "",
-      createdAt: row.created_at,
+    const mappedInvoices: DealerInvoiceRecord[] = await Promise.all((data || []).map(async (row: any) => {
+      // Fetch invoice items for this invoice
+      let products: ProductRow[] = [];
+      try {
+        const { data: itemsData, error: itemsError } = await supabase
+          .from("dealers_invoice_items")
+          .select("*")
+          .eq("invoice_id", row.id);
+
+        if (!itemsError && itemsData) {
+          products = itemsData.map((item: any) => ({
+            id: item.id,
+            product: item.product_name || "",
+            productDescription: item.product_description || "",
+            amount: Number(item.unit_price || 0),
+            unit: Number(item.quantity || 1),
+            gstRate: Number(item.gst_rate || 18),
+          }));
+        }
+      } catch (err) {
+        console.warn("Failed to load invoice items for invoice", row.id, err);
+      }
+
+      return {
+        id: row.id,
+        dealerInvoiceNo: row.invoice_number,
+        dealerName: row.dealer_name,
+        dealerId: row.dealer_id,
+        contactNo: row.contact_no || "",
+        location: row.location || "",
+        invoiceDate: row.invoice_date,
+        dueDate: row.due_date || "",
+        poNumber: row.purchase_order_no || "",
+        sentTo: row.sent_to || "",
+        shipTo: row.ship_to || "",
+        products,
+        total: Number(row.total_amount || 0),
+        labourCharges: Number(row.labour_charges || 0),
+        gstEnabled: row.gst_enabled ?? true,
+        gstAmount: Number(row.total_gst_amount || 0),
+        modeOfPayment: row.mode_of_payment || "",
+        leadSource: row.lead_source || "",
+        createdAt: row.created_at,
+      };
     }));
 
     setInvoices(mappedInvoices);
