@@ -270,29 +270,42 @@ export default function DealerInvoiceContent({
   );
 
   const summaryBlock = (
-    <div className="grid grid-cols-3 gap-6 mb-6">
-      <div></div>
-      <div></div>
-      <div className="space-y-2 border-2 border-gray-300 p-4 bg-gray-50 rounded">
-        <div className="flex justify-between text-sm">
-          <span className="font-medium text-gray-700">Product Total:</span>
-          <span className="font-semibold text-gray-900">₹{subtotal.toFixed(2)}</span>
-        </div>
-        {labourCharges > 0 && (
-          <div className="flex justify-between text-sm">
-            <span className="font-medium text-gray-700">Labour Charges:</span>
-            <span className="font-semibold text-gray-900">₹{labourCharges.toFixed(2)}</span>
-          </div>
-        )}
-        {gstEnabled && (
-          <div className="border-t border-gray-300 pt-2 flex justify-between font-bold text-base">
-            <span className="text-gray-900">TOTAL AMOUNT:</span>
-            <span className="text-green-700">₹{totalAmount.toFixed(2)}</span>
-          </div>
-        )}
+  <div className="flex justify-end mb-6">
+    <div className="border-2 border-gray-300 p-4 bg-gray-50 rounded w-fit">
+      <div className="flex justify-between gap-8 text-sm">
+        <span className="font-medium text-gray-700">
+          Product Total:
+        </span>
+        <span className="font-semibold text-gray-900 whitespace-nowrap">
+          ₹{subtotal.toFixed(2)}
+        </span>
       </div>
+
+      {labourCharges > 0 && (
+        <div className="flex justify-between gap-8 text-sm mt-2">
+          <span className="font-medium text-gray-700">
+            Labour Charges:
+          </span>
+          <span className="font-semibold text-gray-900 whitespace-nowrap">
+            ₹{labourCharges.toFixed(2)}
+          </span>
+        </div>
+      )}
+
+      {gstEnabled && (
+        <div className="border-t border-gray-300 pt-2 mt-2 flex justify-between gap-8 font-bold text-base">
+          <span className="text-gray-900 whitespace-nowrap">
+            TOTAL AMOUNT:
+          </span>
+
+          <span className="text-green-700 whitespace-nowrap">
+            ₹{totalAmount.toFixed(2)}
+          </span>
+        </div>
+      )}
     </div>
-  );
+  </div>
+);
 
   const termsBlock = (
     <div className="space-y-4 text-xs text-gray-700">
