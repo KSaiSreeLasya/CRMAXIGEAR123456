@@ -924,10 +924,16 @@ const loadInvoices = async () => {
                               </div>
                             )}
                           </div>
-                          <div className="flex justify-between font-semibold border-t pt-2 items-center flex-nowrap">
-                            <span className="whitespace-nowrap">TOTAL AMOUNT:</span>
-                            <span className="text-green-600 whitespace-nowrap ml-2 flex-shrink-0">₹{total.toFixed(2)}</span>
-                          </div>
+                          <div className="flex justify-between items-center font-semibold border-t pt-2">
+  <span className="whitespace-nowrap">TOTAL AMOUNT:</span>
+
+  <span
+    className="text-green-600 whitespace-nowrap flex-shrink-0"
+    style={{ whiteSpace: "nowrap" }}
+  >
+    ₹{total.toFixed(2)}
+  </span>
+</div>
                         </>
                       )}
                     </div>
