@@ -888,7 +888,7 @@ const loadInvoices = async () => {
 
             {/* Summary */}
             {form.products.length > 0 && (
-              <div className="bg-muted p-4 rounded-md mb-6">
+              <div className="bg-muted p-4 rounded-md mb-6 overflow-x-auto">
                 {(() => {
                   const { productTotal, taxableTotal, gstAmount, total, gstBreakdown, labourGst } =
                     calculateInvoiceTotal(form.products, form.labourCharges);
