@@ -1,44 +1,8 @@
 import Layout from "@/components/Layout";
 import { Briefcase, CalendarCheck2, Boxes, ShieldCheck, Wrench, Users, Receipt, Truck, AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-
-interface Delivery {
-  id: string;
-  delivery_date: string;
-  status: string;
-}
 
 export default function Dashboard() {
-  const [upcomingDeliveryCount, setUpcomingDeliveryCount] = useState(0);
-
-  useEffect(() => {
-    checkUpcomingDeliveries();
-  }, []);
-
-  const checkUpcomingDeliveries = async () => {
-    try {
-      const { data } = await supabase
-        .from("deliveries")
-        .select("id, delivery_date, status")
-        .neq("status", "completed");
-
-      if (data) {
-        const now = new Date();
-        const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-
-        const upcoming = (data as Delivery[]).filter((delivery) => {
-          const deliveryDate = new Date(delivery.delivery_date);
-          return deliveryDate >= now && deliveryDate <= oneWeekFromNow;
-        });
-
-        setUpcomingDeliveryCount(upcoming.length);
-      }
-    } catch (error) {
-      console.error("Failed to fetch upcoming deliveries:", error);
-    }
-  };
 
   return (
     <Layout>
@@ -51,18 +15,17 @@ export default function Dashboard() {
             </p>
           </div>
 
-          {upcomingDeliveryCount > 0 && (
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 flex items-center gap-3">
-              <AlertCircle className="h-6 w-6 text-orange-600 flex-shrink-0" />
-              <div>
-                <h3 className="font-semibold text-orange-900">Upcoming Deliveries</h3>
-                <p className="text-sm text-orange-800">
-                  You have <span className="font-bold">{upcomingDeliveryCount}</span> delivery{upcomingDeliveryCount !== 1 ? 'ies' : ''} due in the next 7 days. Click the DELIVERY tile to view details.
-                </p>
-              </div>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3">
+            <AlertCircle className="h-6 w-6 text-blue-600 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold text-blue-900">Gatekeeper Function</h3>
+              <p className="text-sm text-blue-800">
+                The CRM acts as a gatekeeper for incoming dealer shipments. Visit the <strong>INVENTORY</strong> module and open the <strong>"Incoming Shipments"</strong> tab to review and manage pending dealer requests.
+              </p>
             </div>
-          )}
+          </div>
 
+          {/* Modules Grid */}
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl">
             <Link
               to="/projects"

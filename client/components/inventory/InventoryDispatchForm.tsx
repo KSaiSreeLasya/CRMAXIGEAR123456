@@ -62,7 +62,15 @@ export default function InventoryDispatchForm({
     }
   };
 
-  const selectedProduct = inventoryItems.find(
+  const filteredProducts = inventoryItems.filter((item) => {
+    if (formData.category === "vehicles") {
+      return item.modelNo && !item.partName;
+    } else {
+      return item.partName && !item.modelNo;
+    }
+  });
+
+  const selectedProduct = filteredProducts.find(
     (item) => item.id === formData.productId
   );
 
@@ -70,7 +78,16 @@ export default function InventoryDispatchForm({
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "category") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        productId: "",
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const validateForm = () => {
@@ -175,8 +192,8 @@ export default function InventoryDispatchForm({
               onChange={handleInputChange}
               className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
-              <option value="">-- Select a product --</option>
-              {inventoryItems.map((item) => (
+              <option value="">-- Select a {formData.category === "vehicles" ? "vehicle" : "spare"} --</option>
+              {filteredProducts.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.modelNo || item.partName} (Stock: {item.closingStock || 0})
                 </option>
