@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DealersTab from "@/components/dealers/DealersTab";
 import ProductsTab from "@/components/dealers/ProductsTab";
+import { DealerAuditDashboard } from "@/components/DealerAuditDashboard";
 import {
   fetchDMSDealers,
   addDMSDealer,
@@ -100,11 +101,16 @@ export default function Dealers() {
               <p className="text-muted-foreground">Loading data...</p>
             </div>
           ) : (
-            <Tabs defaultValue="dealers" className="w-full">
+            <Tabs defaultValue="audit" className="w-full">
               <TabsList>
-                <TabsTrigger value="dealers">Dealers</TabsTrigger>
+                <TabsTrigger value="audit">Dealer Audit</TabsTrigger>
+                <TabsTrigger value="dealers">Manage Dealers</TabsTrigger>
                 <TabsTrigger value="products">Products</TabsTrigger>
               </TabsList>
+
+              <TabsContent value="audit" className="space-y-6">
+                <DealerAuditDashboard />
+              </TabsContent>
 
               <TabsContent value="dealers" className="space-y-6">
                 <DealersTab
