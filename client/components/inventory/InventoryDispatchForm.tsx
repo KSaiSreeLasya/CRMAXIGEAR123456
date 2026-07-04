@@ -66,24 +66,31 @@ export default function InventoryDispatchForm({
   }, []);
 
   useEffect(() => {
-    const vehicleItems = inventoryItems.filter(i => i.modelNo && !i.partName);
-    const spareItems = inventoryItems.filter(i => i.partName && !i.modelNo);
-    const withoutModelNoOrPartName = inventoryItems.filter(i => !i.modelNo && !i.partName);
+    // Updated filter logic: vehicles are identified by having chassis/motor/battery info
+    const vehicleItems = inventoryItems.filter((item) => {
+      return !item.partName && (
+        (item.chassisNos && item.chassisNos.length > 0) ||
+        item.motorNo ||
+        item.batteryNo ||
+        item.vehicleCount ||
+        item.motorNo !== undefined
+      );
+    });
+
+    const spareItems = inventoryItems.filter(i => i.partName);
+    const otherItems = inventoryItems.filter(i => !i.partName && vehicleItems.indexOf(i) === -1);
 
     console.log(`%c📦 Inventory items in dispatch form`, "color: blue; font-weight: bold;");
-    console.log(`Total: ${inventoryItems.length} | Vehicles: ${vehicleItems.length} | Spares: ${spareItems.length} | Other: ${withoutModelNoOrPartName.length}`);
-
-    if (withoutModelNoOrPartName.length > 0) {
-      console.warn("%c⚠️ Items without modelNo or partName:", "color: orange;", withoutModelNoOrPartName);
-    }
+    console.log(`Total: ${inventoryItems.length} | Vehicles: ${vehicleItems.length} | Spares: ${spareItems.length} | Other: ${otherItems.length}`);
 
     if (vehicleItems.length > 0) {
-      console.log("Vehicle options available for dispatch:");
+      console.log("%cVehicle options available for dispatch:", "color: green; font-weight: bold;");
       vehicleItems.forEach(v => {
-        console.log(`  ✓ ${v.modelNo} (${v.brand}) - Stock: ${v.closingStock}, Chassis: ${v.chassisNos?.length || 0}`);
+        const label = v.modelNo || v.brand || "Unknown";
+        console.log(`  ✓ ${label} - Stock: ${v.closingStock}, Chassis: ${v.chassisNos?.length || 0}`);
       });
     } else {
-      console.warn("%c⚠️ No vehicles to display in form!", "color: orange;");
+      console.warn("%c⚠️ No vehicles to display in form!", "color: red; font-weight: bold;");
       if (inventoryItems.length > 0) {
         console.log("Raw inventory items:", inventoryItems);
       }
@@ -105,15 +112,24 @@ export default function InventoryDispatchForm({
 
   const filteredProducts = inventoryItems.filter((item) => {
     if (formData.category === "vehicles") {
-      // Show all vehicles, including those with closing_stock=0 (already dispatched/sold)
-      return item.modelNo && !item.partName;
+      // A vehicle is identified by having vehicle-related data, regardless of modelNo
+      // Check if it has chassis numbers OR motor/battery info OR vehicle count
+      const isVehicle = !item.partName && (
+        (item.chassisNos && item.chassisNos.length > 0) ||
+        item.motorNo ||
+        item.batteryNo ||
+        item.vehicleCount ||
+        item.motorNo !== undefined
+      );
+      return isVehicle;
     } else {
-      return item.partName && !item.modelNo;
+      // A spare is identified by having a partName
+      return item.partName;
     }
   }).sort((a, b) => {
-    // Sort by model number for consistency
-    const modelA = (a.modelNo || "").toLowerCase();
-    const modelB = (b.modelNo || "").toLowerCase();
+    // Sort by model number, then by brand for consistency
+    const modelA = (a.modelNo || a.brand || "").toLowerCase();
+    const modelB = (b.modelNo || b.brand || "").toLowerCase();
     return modelA.localeCompare(modelB);
   });
 
@@ -197,9 +213,10 @@ export default function InventoryDispatchForm({
         // Dispatch each selected vehicle with its quantity
         for (const vehicle of selectedVehicles) {
           const qty = vehicle.quantity || 1;
+          const productLabel = selectedProduct?.modelNo || selectedProduct?.brand || "Vehicle";
           const success = await onDispatch({
-            sku: selectedProduct?.modelNo || "N/A",
-            productName: selectedProduct?.modelNo || "Unknown Product",
+            sku: selectedProduct?.modelNo || selectedProduct?.brand || "N/A",
+            productName: productLabel,
             category: "vehicles",
             quantity: qty,
             dealerId: formData.dealerId,
@@ -333,22 +350,30 @@ export default function InventoryDispatchForm({
               {/* Product Details Header */}
               <div className="mb-4 p-4 bg-muted rounded-lg border border-border">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground font-semibold">Model</p>
-                    <p>{selectedProduct.modelNo}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground font-semibold">Brand</p>
-                    <p>{selectedProduct.brand}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground font-semibold">Vehicle Model</p>
-                    <p>{selectedProduct.vehicleModel || "-"}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground font-semibold">HSN No</p>
-                    <p className="text-xs font-mono">{selectedProduct.hsnNo || "-"}</p>
-                  </div>
+                  {selectedProduct.modelNo && (
+                    <div>
+                      <p className="text-muted-foreground font-semibold">Model</p>
+                      <p>{selectedProduct.modelNo}</p>
+                    </div>
+                  )}
+                  {selectedProduct.brand && (
+                    <div>
+                      <p className="text-muted-foreground font-semibold">Brand</p>
+                      <p>{selectedProduct.brand}</p>
+                    </div>
+                  )}
+                  {selectedProduct.vehicleModel && (
+                    <div>
+                      <p className="text-muted-foreground font-semibold">Vehicle Model</p>
+                      <p>{selectedProduct.vehicleModel}</p>
+                    </div>
+                  )}
+                  {selectedProduct.hsnNo && (
+                    <div>
+                      <p className="text-muted-foreground font-semibold">HSN No</p>
+                      <p className="text-xs font-mono">{selectedProduct.hsnNo}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
