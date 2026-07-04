@@ -56,13 +56,14 @@ export default function InventoryDispatch() {
       const items: InventoryItem[] = [];
 
       if (supabase) {
-        // Fetch vehicles inventory (all vehicles, not filtered by closing_stock)
+        // Fetch ALL vehicles inventory (including those already partially/fully dispatched)
         const { data: vehiclesData, error: vehiclesError } = await supabase
           .from("inventory_items")
-          .select("id, model_no, brand, vehicle_model, hsn_no, vehicle_count, closing_stock, motor_no, battery_no, battery_model, chassis_no, manufacturer_inv_no, sales_count");
+          .select("*")
+          .order("model_no", { ascending: true });
 
         if (!vehiclesError && vehiclesData) {
-          console.log(`Loaded ${vehiclesData.length} vehicles from database`, vehiclesData);
+          console.log(`Loaded ${vehiclesData.length} vehicles from database`);
           items.push(
             ...vehiclesData.map((v: any) => {
               // Parse chassis numbers from comma-separated string
@@ -112,6 +113,9 @@ export default function InventoryDispatch() {
       }
 
       setInventoryItems(items);
+      console.log(`Total inventory items loaded for dispatch: ${items.length}`);
+      console.log("Vehicle items available:", items.filter(i => i.modelNo).length);
+      console.log("Spare items available:", items.filter(i => i.partName).length);
 
       // Load dealers
       const dealersData = await fetchDMSDealers();

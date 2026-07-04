@@ -84,10 +84,16 @@ export default function InventoryDispatchForm({
 
   const filteredProducts = inventoryItems.filter((item) => {
     if (formData.category === "vehicles") {
+      // Show all vehicles, including those with closing_stock=0 (already dispatched/sold)
       return item.modelNo && !item.partName;
     } else {
       return item.partName && !item.modelNo;
     }
+  }).sort((a, b) => {
+    // Sort by model number for consistency
+    const modelA = (a.modelNo || "").toLowerCase();
+    const modelB = (b.modelNo || "").toLowerCase();
+    return modelA.localeCompare(modelB);
   });
 
   const selectedProduct = filteredProducts.find(
