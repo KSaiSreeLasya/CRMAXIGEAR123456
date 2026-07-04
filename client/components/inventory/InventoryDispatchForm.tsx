@@ -66,7 +66,24 @@ export default function InventoryDispatchForm({
   }, []);
 
   useEffect(() => {
-    console.log("Inventory items in form:", inventoryItems);
+    const vehicleItems = inventoryItems.filter(i => i.modelNo && !i.partName);
+    const spareItems = inventoryItems.filter(i => i.partName && !i.modelNo);
+    const withoutModelNoOrPartName = inventoryItems.filter(i => !i.modelNo && !i.partName);
+
+    console.log(`%c📦 Inventory items in dispatch form`, "color: blue; font-weight: bold;");
+    console.log(`Total: ${inventoryItems.length} | Vehicles: ${vehicleItems.length} | Spares: ${spareItems.length} | Other: ${withoutModelNoOrPartName.length}`);
+
+    if (vehicleItems.length > 0) {
+      console.log("Vehicle options available for dispatch:");
+      vehicleItems.forEach(v => {
+        console.log(`  ✓ ${v.modelNo} (${v.brand}) - Stock: ${v.closingStock}, Chassis: ${v.chassisNos?.length || 0}`);
+      });
+    } else {
+      console.warn("%c⚠️ No vehicles to display in form!", "color: orange;");
+      if (inventoryItems.length > 0) {
+        console.log("Raw inventory items:", inventoryItems);
+      }
+    }
   }, [inventoryItems]);
 
   const loadDealers = async () => {
