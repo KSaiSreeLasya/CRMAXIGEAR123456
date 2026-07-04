@@ -27,6 +27,7 @@ interface SelectedVehicle {
   chassisNo: string;
   motorNo: string;
   batteryNo: string;
+  quantity?: number;
 }
 
 interface InventoryDispatchFormProps {
@@ -120,8 +121,17 @@ export default function InventoryDispatchForm({
           (v) => !(v.chassisNo === vehicle.chassisNo && v.motorNo === vehicle.motorNo)
         );
       } else {
-        return [...prev, vehicle];
+        return [...prev, { ...vehicle, quantity: vehicle.quantity || 1 }];
       }
+    });
+  };
+
+  const updateVehicleQuantity = (index: number, quantity: number) => {
+    if (quantity < 1) return;
+    setSelectedVehicles((prev) => {
+      const updated = [...prev];
+      updated[index].quantity = quantity;
+      return updated;
     });
   };
 
@@ -157,13 +167,14 @@ export default function InventoryDispatchForm({
     setIsLoading(true);
     try {
       if (formData.category === "vehicles") {
-        // Dispatch each selected vehicle individually
+        // Dispatch each selected vehicle with its quantity
         for (const vehicle of selectedVehicles) {
+          const qty = vehicle.quantity || 1;
           const success = await onDispatch({
             sku: selectedProduct?.modelNo || "N/A",
             productName: selectedProduct?.modelNo || "Unknown Product",
             category: "vehicles",
-            quantity: 1,
+            quantity: qty,
             dealerId: formData.dealerId,
             chassisNo: vehicle.chassisNo,
             motorNo: vehicle.motorNo,
@@ -176,7 +187,8 @@ export default function InventoryDispatchForm({
             return;
           }
         }
-        toast.success(`${selectedVehicles.length} vehicle(s) dispatched successfully`);
+        const totalQty = selectedVehicles.reduce((sum, v) => sum + (v.quantity || 1), 0);
+        toast.success(`${totalQty} vehicle(s) from ${selectedVehicles.length} line(s) dispatched successfully`);
       } else {
         // Spares dispatch
         const success = await onDispatch({
@@ -408,12 +420,24 @@ export default function InventoryDispatchForm({
                   <h4 className="font-semibold text-sm mb-2 text-green-900 dark:text-green-100">
                     Selected Vehicles ({selectedVehicles.length}):
                   </h4>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {selectedVehicles.map((v, idx) => (
-                      <div key={idx} className="text-xs text-green-800 dark:text-green-200 p-2 bg-white dark:bg-green-950/40 rounded font-mono">
-                        <p><span className="font-semibold">Chassis:</span> {v.chassisNo}</p>
-                        <p><span className="font-semibold">Motor:</span> {v.motorNo}</p>
-                        <p><span className="font-semibold">Battery:</span> {v.batteryNo}</p>
+                      <div key={idx} className="text-xs text-green-800 dark:text-green-200 p-3 bg-white dark:bg-green-950/40 rounded">
+                        <div className="font-mono space-y-1 mb-2">
+                          <p><span className="font-semibold">Chassis:</span> {v.chassisNo}</p>
+                          <p><span className="font-semibold">Motor:</span> {v.motorNo}</p>
+                          <p><span className="font-semibold">Battery:</span> {v.batteryNo}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <label className="font-semibold text-xs">Qty to dispatch:</label>
+                          <input
+                            type="number"
+                            min="1"
+                            value={v.quantity || 1}
+                            onChange={(e) => updateVehicleQuantity(idx, parseInt(e.target.value) || 1)}
+                            className="w-16 px-2 py-1 border border-green-300 dark:border-green-700 rounded text-xs font-medium bg-white dark:bg-green-950/60 text-green-900 dark:text-green-100"
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -466,7 +490,9 @@ export default function InventoryDispatchForm({
               <div>
                 <p className="text-muted-foreground">Quantity</p>
                 <p className="font-medium">
-                  {isVehicleCategory ? selectedVehicles.length : formData.quantity} units
+                  {isVehicleCategory
+                    ? selectedVehicles.reduce((sum, v) => sum + (v.quantity || 1), 0)
+                    : formData.quantity} units
                 </p>
               </div>
               <div>
