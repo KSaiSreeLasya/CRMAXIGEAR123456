@@ -1028,67 +1028,61 @@ export default function ServiceInvoice() {
           ) : invoices.length === 0 ? (
             <p className="text-muted-foreground">No service invoices yet.</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[1400px] text-sm">
+            <div className="w-full">
+              <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="px-4 py-2 text-left">Invoice No</th>
-                    <th className="px-4 py-2 text-left">Customer</th>
-                    <th className="px-4 py-2 text-left">Contact</th>
-                    <th className="px-4 py-2 text-left">Location</th>
-                    <th className="px-4 py-2 text-left">Products</th>
-                    <th className="px-4 py-2 text-left">Date</th>
-                    <th className="px-4 py-2 text-left">Payment Mode</th>
-                    <th className="px-4 py-2 text-left">Lead Source</th>
-                    <th className="px-4 py-2 text-right">Total</th>
-                    <th className="px-4 py-2 text-left">Action</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold">Invoice No</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold">Customer</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold">Contact</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold">Location</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold max-w-[100px]">Products</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold">Date</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold">Payment Mode</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold">Source</th>
+                    <th className="px-3 py-2 text-right text-xs font-semibold">Total</th>
+                    <th className="px-3 py-2 text-left text-xs font-semibold">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {invoices.map((invoice) => (
-                    <tr key={invoice.id} className="border-b border-border">
-                      <td className="px-4 py-2">{invoice.serviceInvoiceNo}</td>
-                      <td className="px-4 py-2">{invoice.customerName}</td>
-                      <td className="px-4 py-2">{invoice.contactNo}</td>
-                      <td className="px-4 py-2">{invoice.location}</td>
-                      <td className="px-4 py-2 text-sm">
-                        <div className="space-y-1">
-                          {(invoice.products || []).map((p, idx) => (
-                            <div key={idx} className="text-xs">
-                              {p.product} × {p.unit || 1} @ ₹{(p.amount || 0).toFixed(2)}
-                            </div>
-                          ))}
-                        </div>
+                    <tr key={invoice.id} className="border-b border-border text-xs">
+                      <td className="px-3 py-2">{invoice.serviceInvoiceNo}</td>
+                      <td className="px-3 py-2">{invoice.customerName}</td>
+                      <td className="px-3 py-2">{invoice.contactNo}</td>
+                      <td className="px-3 py-2">{invoice.location}</td>
+                      <td className="px-3 py-2 max-w-[100px] truncate" title={(invoice.products || []).map(p => `${p.product} × ${p.unit || 1}`).join(', ')}>
+                        {(invoice.products || []).length > 0 ? `${(invoice.products || []).length} items` : "-"}
                       </td>
-                      <td className="px-4 py-2">{invoice.invoiceDate}</td>
-                      <td className="px-4 py-2 text-sm">{invoice.modeOfPayment}</td>
-                      <td className="px-4 py-2 text-sm">{invoice.leadSource || "-"}</td>
-                      <td className="px-4 py-2 text-right font-semibold">₹{(invoice.total || 0).toFixed(2)}</td>
-                      <td className="px-4 py-2">
-                        <div className="flex items-center gap-2">
+                      <td className="px-3 py-2">{invoice.invoiceDate}</td>
+                      <td className="px-3 py-2">{invoice.modeOfPayment}</td>
+                      <td className="px-3 py-2">{invoice.leadSource || "-"}</td>
+                      <td className="px-3 py-2 text-right font-semibold">₹{(invoice.total || 0).toFixed(2)}</td>
+                      <td className="px-3 py-2">
+                        <div className="flex items-center gap-1 flex-wrap">
                           <button
                             type="button"
                             onClick={() => setPreviewId(invoice.id)}
-                            className="inline-flex items-center gap-1 text-primary hover:text-primary/90"
+                            className="inline-flex items-center gap-0.5 text-primary hover:text-primary/90 text-xs whitespace-nowrap"
                           >
-                            <Download className="w-4 h-4" />
-                            Preview
+                            <Download className="w-3 h-3" />
+                            View
                           </button>
                           <button
                             type="button"
                             onClick={() => handleEdit(invoice)}
-                            className="inline-flex items-center gap-1 text-primary hover:text-primary/90"
+                            className="inline-flex items-center gap-0.5 text-primary hover:text-primary/90 text-xs whitespace-nowrap"
                           >
-                            <Edit className="w-4 h-4" />
+                            <Edit className="w-3 h-3" />
                             Edit
                           </button>
                           <button
                             type="button"
                             onClick={() => void handleDelete(invoice.id)}
-                            className="inline-flex items-center gap-1 text-destructive hover:text-destructive/90"
+                            className="inline-flex items-center gap-0.5 text-destructive hover:text-destructive/90 text-xs whitespace-nowrap"
                           >
-                            <Trash2 className="w-4 h-4" />
-                            Delete
+                            <Trash2 className="w-3 h-3" />
+                            Del
                           </button>
                         </div>
                       </td>
