@@ -907,47 +907,47 @@ export default function Projects() {
                   </div>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[1500px] text-sm">
+                <div className="w-full">
+                  <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-border">
-                        <th className="px-6 py-4 text-left font-semibold text-foreground whitespace-nowrap">
+                        <th className="px-3 py-3 text-left font-semibold text-foreground text-xs">
                           Model No.
                         </th>
-                        <th className="px-6 py-4 text-left font-semibold text-foreground whitespace-nowrap">
+                        <th className="px-3 py-3 text-left font-semibold text-foreground text-xs">
                           Customer Name
                         </th>
-                        <th className="px-6 py-4 text-left font-semibold text-foreground whitespace-nowrap">
+                        <th className="px-3 py-3 text-left font-semibold text-foreground text-xs">
                           Contact No
                         </th>
-                        <th className="px-6 py-4 text-left font-semibold text-foreground whitespace-nowrap">
+                        <th className="px-3 py-3 text-left font-semibold text-foreground text-xs">
                           Location
                         </th>
-                        <th className="px-6 py-4 text-left font-semibold text-foreground whitespace-nowrap">
-                          Product Description
+                        <th className="px-3 py-3 text-left font-semibold text-foreground text-xs max-w-[120px]">
+                          Product
                         </th>
-                        <th className="px-6 py-4 text-left font-semibold text-foreground whitespace-nowrap">
-                          HSN No.
+                        <th className="px-3 py-3 text-left font-semibold text-foreground text-xs">
+                          HSN
                         </th>
-                        <th className="px-6 py-4 text-left font-semibold text-foreground whitespace-nowrap">
-                          Chassis No.
+                        <th className="px-3 py-3 text-left font-semibold text-foreground text-xs">
+                          Chassis
                         </th>
-                        <th className="px-6 py-4 text-left font-semibold text-foreground whitespace-nowrap">
-                          Motor No.
+                        <th className="px-3 py-3 text-left font-semibold text-foreground text-xs">
+                          Motor
                         </th>
-                        <th className="px-6 py-4 text-left font-semibold text-foreground whitespace-nowrap">
-                          Battery No.
+                        <th className="px-3 py-3 text-left font-semibold text-foreground text-xs">
+                          Battery
                         </th>
-                        <th className="px-6 py-4 text-left font-semibold text-foreground whitespace-nowrap">
-                          Invoice Date
+                        <th className="px-3 py-3 text-left font-semibold text-foreground text-xs">
+                          Inv. Date
                         </th>
-                        <th className="px-6 py-4 text-left font-semibold text-foreground whitespace-nowrap">
+                        <th className="px-3 py-3 text-left font-semibold text-foreground text-xs">
                           Amount
                         </th>
-                        <th className="px-6 py-4 text-left font-semibold text-foreground whitespace-nowrap">
+                        <th className="px-3 py-3 text-left font-semibold text-foreground text-xs">
                           Created
                         </th>
-                        <th className="px-6 py-4 text-left font-semibold text-foreground whitespace-nowrap">
+                        <th className="px-3 py-3 text-left font-semibold text-foreground text-xs">
                           Actions
                         </th>
                       </tr>
@@ -956,62 +956,62 @@ export default function Projects() {
                       {projects.map((project) => (
                         <tr
                           key={project.id}
-                          className="border-b border-border hover:bg-muted/50 transition-colors"
+                          className="border-b border-border hover:bg-muted/50 transition-colors text-xs"
                         >
-                          <td className="px-6 py-4 font-mono text-sm">{project.modelNo || "-"}</td>
-                          <td className="px-6 py-4 font-medium">{project.customerName}</td>
-                          <td className="px-6 py-4">{project.contactNo}</td>
-                          <td className="px-6 py-4">{project.location}</td>
-                          <td className="px-6 py-4 max-w-xs truncate">
+                          <td className="px-3 py-3 font-mono">{project.modelNo || "-"}</td>
+                          <td className="px-3 py-3 font-medium">{project.customerName}</td>
+                          <td className="px-3 py-3">{project.contactNo}</td>
+                          <td className="px-3 py-3">{project.location}</td>
+                          <td className="px-3 py-3 max-w-[120px] truncate" title={project.productDescription}>
                             {project.productDescription}
                           </td>
-                          <td className="px-6 py-4 font-mono text-sm">
+                          <td className="px-3 py-3 font-mono">
                             {project.hsnNo}
                           </td>
-                          <td className="px-6 py-4 font-mono text-sm">
+                          <td className="px-3 py-3 font-mono">
                             {project.chassisNo}
                           </td>
-                          <td className="px-6 py-4 font-mono text-sm">
+                          <td className="px-3 py-3 font-mono">
                             {project.motorNo || "-"}
                           </td>
-                          <td className="px-6 py-4 font-mono text-sm">
+                          <td className="px-3 py-3 font-mono">
                             {project.batteryNo || "-"}
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-3 py-3">
                             {project.invoiceDate || "-"}
                           </td>
-                          <td className="px-6 py-4 font-semibold text-success">
+                          <td className="px-3 py-3 font-semibold text-success">
                             {formatAmount(project.amount)}
                           </td>
-                          <td className="px-6 py-4 text-muted-foreground text-xs">
+                          <td className="px-3 py-3 text-muted-foreground">
                             {project.createdAt}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-3 whitespace-nowrap">
+                          <td className="px-3 py-3">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <button
                                 onClick={() => {
                                   setEditingProject(project);
                                   setIsEditModalOpen(true);
                                 }}
-                                className="inline-flex items-center gap-2 text-primary hover:text-primary/90 transition-colors font-medium text-sm whitespace-nowrap"
+                                className="inline-flex items-center gap-1 text-primary hover:text-primary/90 transition-colors font-medium text-xs whitespace-nowrap"
                                 title="Edit project"
                               >
-                                <Edit className="w-4 h-4" />
+                                <Edit className="w-3 h-3" />
                                 Edit
                               </button>
                               <Link to={`/invoice/${project.id}`}>
-                                <button className="inline-flex items-center gap-2 text-primary hover:text-primary/90 transition-colors font-medium text-sm whitespace-nowrap">
-                                  <FileText className="w-4 h-4" />
-                                  Invoice
+                                <button className="inline-flex items-center gap-1 text-primary hover:text-primary/90 transition-colors font-medium text-xs whitespace-nowrap">
+                                  <FileText className="w-3 h-3" />
+                                  Inv
                                 </button>
                               </Link>
                               <button
                                 onClick={() => handleDeleteProject(project.id)}
-                                className="inline-flex items-center gap-2 text-destructive hover:text-destructive/90 transition-colors font-medium text-sm whitespace-nowrap"
+                                className="inline-flex items-center gap-1 text-destructive hover:text-destructive/90 transition-colors font-medium text-xs whitespace-nowrap"
                                 title="Delete project"
                               >
-                                <Trash2 className="w-4 h-4" />
-                                Delete
+                                <Trash2 className="w-3 h-3" />
+                                Del
                               </button>
                             </div>
                           </td>

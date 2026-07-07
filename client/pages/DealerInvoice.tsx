@@ -204,19 +204,25 @@ export default function DealerInvoice() {
     void loadInvoices();
     void loadSparesInvoices();
     void loadDealers();
-    if (!editingId) {
+  }, []);
+
+  useEffect(() => {
+    if (!editingId && form.dealerInvoiceNo === "") {
       setForm((prev) => ({
         ...prev,
         dealerInvoiceNo: getNextDealerInvoiceNumber(),
       }));
     }
-    if (!editingSparesId) {
+  }, [editingId, form.dealerInvoiceNo]);
+
+  useEffect(() => {
+    if (!editingSparesId && sparesForm.dealerInvoiceNo === "") {
       setSparesForm((prev) => ({
         ...prev,
         dealerInvoiceNo: getNextSparesInvoiceNumber(),
       }));
     }
-  }, [editingId, editingSparesId]);
+  }, [editingSparesId, sparesForm.dealerInvoiceNo]);
 
 const loadInvoices = async () => {
   setIsLoading(true);
@@ -1388,60 +1394,62 @@ const loadSparesInvoices = async () => {
                 No invoices yet. Create one above.
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="w-full">
                 <table className="w-full text-sm">
                   <thead className="border-t border-b bg-muted">
                     <tr>
-                      <th className="text-left px-6 py-3 font-medium">
+                      <th className="text-left px-3 py-3 font-medium text-xs">
                         Invoice #
                       </th>
-                      <th className="text-left px-6 py-3 font-medium">
+                      <th className="text-left px-3 py-3 font-medium text-xs">
                         Dealer
                       </th>
-                      <th className="text-left px-6 py-3 font-medium">Date</th>
-                      <th className="text-left px-6 py-3 font-medium">Amount</th>
-                      <th className="text-left px-6 py-3 font-medium">
+                      <th className="text-left px-3 py-3 font-medium text-xs">Date</th>
+                      <th className="text-left px-3 py-3 font-medium text-xs">Amount</th>
+                      <th className="text-left px-3 py-3 font-medium text-xs">
                         Payment
                       </th>
-                      <th className="text-left px-6 py-3 font-medium">
+                      <th className="text-left px-3 py-3 font-medium text-xs">
                         Actions
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     {invoices.map((invoice) => (
-                      <tr key={invoice.id} className="border-t hover:bg-muted">
-                        <td className="px-6 py-3">
+                      <tr key={invoice.id} className="border-t hover:bg-muted text-xs">
+                        <td className="px-3 py-3">
                           {invoice.dealerInvoiceNo}
                         </td>
-                        <td className="px-6 py-3">{invoice.dealerName}</td>
-                        <td className="px-6 py-3">{invoice.invoiceDate}</td>
-                        <td className="px-6 py-3 font-semibold">
+                        <td className="px-3 py-3">{invoice.dealerName}</td>
+                        <td className="px-3 py-3">{invoice.invoiceDate}</td>
+                        <td className="px-3 py-3 font-semibold">
                           ₹{invoice.total.toFixed(2)}
                         </td>
-                        <td className="px-6 py-3">{invoice.modeOfPayment}</td>
-                        <td className="px-6 py-3 flex gap-2">
+                        <td className="px-3 py-3">{invoice.modeOfPayment}</td>
+                        <td className="px-3 py-3 flex gap-1 flex-wrap">
                           <Button
                             onClick={() => setPreviewId(invoice.id)}
                             variant="outline"
                             size="sm"
+                            className="text-xs h-7"
                           >
-                            Preview
+                            View
                           </Button>
                           <Button
                             onClick={() => editInvoice(invoice.id)}
                             variant="outline"
                             size="sm"
+                            className="h-7"
                           >
-                            <Edit className="w-4 h-4" />
+                            <Edit className="w-3 h-3" />
                           </Button>
                           <Button
                             onClick={() => deleteInvoice(invoice.id)}
                             variant="outline"
                             size="sm"
-                            className="text-red-600 hover:bg-red-50"
+                            className="text-red-600 hover:bg-red-50 h-7"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3 h-3" />
                           </Button>
                         </td>
                       </tr>
@@ -1899,60 +1907,62 @@ const loadSparesInvoices = async () => {
                     No spares invoices yet. Create one above.
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <div className="w-full">
                     <table className="w-full text-sm">
                       <thead className="border-t border-b bg-muted">
                         <tr>
-                          <th className="text-left px-6 py-3 font-medium">
+                          <th className="text-left px-3 py-3 font-medium text-xs">
                             Invoice #
                           </th>
-                          <th className="text-left px-6 py-3 font-medium">
+                          <th className="text-left px-3 py-3 font-medium text-xs">
                             Dealer
                           </th>
-                          <th className="text-left px-6 py-3 font-medium">Date</th>
-                          <th className="text-left px-6 py-3 font-medium">Amount</th>
-                          <th className="text-left px-6 py-3 font-medium">
+                          <th className="text-left px-3 py-3 font-medium text-xs">Date</th>
+                          <th className="text-left px-3 py-3 font-medium text-xs">Amount</th>
+                          <th className="text-left px-3 py-3 font-medium text-xs">
                             Payment
                           </th>
-                          <th className="text-left px-6 py-3 font-medium">
+                          <th className="text-left px-3 py-3 font-medium text-xs">
                             Actions
                           </th>
                         </tr>
                       </thead>
                       <tbody>
                         {sparesInvoices.map((invoice) => (
-                          <tr key={invoice.id} className="border-t hover:bg-muted">
-                            <td className="px-6 py-3">
+                          <tr key={invoice.id} className="border-t hover:bg-muted text-xs">
+                            <td className="px-3 py-3">
                               {invoice.sparesInvoiceNo}
                             </td>
-                            <td className="px-6 py-3">{invoice.dealerName}</td>
-                            <td className="px-6 py-3">{invoice.invoiceDate}</td>
-                            <td className="px-6 py-3 font-semibold">
+                            <td className="px-3 py-3">{invoice.dealerName}</td>
+                            <td className="px-3 py-3">{invoice.invoiceDate}</td>
+                            <td className="px-3 py-3 font-semibold">
                               ₹{invoice.total.toFixed(2)}
                             </td>
-                            <td className="px-6 py-3">{invoice.modeOfPayment}</td>
-                            <td className="px-6 py-3 flex gap-2">
+                            <td className="px-3 py-3">{invoice.modeOfPayment}</td>
+                            <td className="px-3 py-3 flex gap-1 flex-wrap">
                               <Button
                                 onClick={() => setSparesPreviewId(invoice.id)}
                                 variant="outline"
                                 size="sm"
+                                className="text-xs h-7"
                               >
-                                Preview
+                                View
                               </Button>
                               <Button
                                 onClick={() => editSparesInvoice(invoice.id)}
                                 variant="outline"
                                 size="sm"
+                                className="h-7"
                               >
-                                <Edit className="w-4 h-4" />
+                                <Edit className="w-3 h-3" />
                               </Button>
                               <Button
                                 onClick={() => deleteSparesInvoice(invoice.id)}
                                 variant="outline"
                                 size="sm"
-                                className="text-red-600 hover:bg-red-50"
+                                className="text-red-600 hover:bg-red-50 h-7"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Trash2 className="w-3 h-3" />
                               </Button>
                             </td>
                           </tr>
