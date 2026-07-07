@@ -11,6 +11,7 @@ import {
   fetchDMSDealers,
   addDMSDealer,
   deleteDMSDealer,
+  updateDMSDealer,
   fetchProducts,
   addProduct as dbAddProduct,
   deleteProduct as dbDeleteProduct,
@@ -57,6 +58,20 @@ export default function Dealers() {
       }
     } catch (error) {
       console.error("Error in addDealer:", error);
+      return false;
+    }
+  };
+
+  const updateDealer = async (id: string, updatedDealer: Omit<Dealer, "id">) => {
+    try {
+      const result = await updateDMSDealer(id, updatedDealer as any);
+      if (result) {
+        setDealers(dealers.map((d) => (d.id === id ? { ...result, id } : d)));
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error updating dealer:", error);
       return false;
     }
   };
@@ -123,6 +138,7 @@ export default function Dealers() {
                 <DealersTab
                   dealers={dealers}
                   onAddDealer={addDealer}
+                  onUpdateDealer={updateDealer}
                   onDeleteDealer={deleteDealer}
                 />
               )}

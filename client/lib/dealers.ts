@@ -114,6 +114,21 @@ export async function addDMSDealer(dealer: Omit<DMSDealer, "id" | "created_at">)
   return data?.[0] || null;
 }
 
+export async function updateDMSDealer(id: string, dealer: Partial<Omit<DMSDealer, "id" | "created_at">>) {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from("dms_dealers")
+    .update(dealer)
+    .eq("id", id)
+    .select("id,name,code,email,password,phone,location,manager_name");
+
+  if (error) {
+    console.error("Error updating DMS dealer:", error);
+    return null;
+  }
+  return data?.[0] || null;
+}
+
 export async function deleteDMSDealer(id: string) {
   if (!supabase) return false;
   const { error } = await supabase.from("dms_dealers").delete().eq("id", id);

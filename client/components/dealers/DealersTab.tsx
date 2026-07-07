@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2, Eye, EyeOff } from "lucide-react";
+import { Trash2, Eye, EyeOff, Edit } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -25,12 +25,14 @@ interface Dealer {
 interface DealersTabProps {
   dealers: Dealer[];
   onAddDealer: (dealer: Omit<Dealer, "id">) => Promise<void>;
+  onUpdateDealer: (id: string, dealer: Omit<Dealer, "id">) => Promise<boolean>;
   onDeleteDealer: (id: string) => Promise<void>;
 }
 
 export default function DealersTab({
   dealers,
   onAddDealer,
+  onUpdateDealer,
   onDeleteDealer,
 }: DealersTabProps) {
   const [formData, setFormData] = useState({
@@ -44,6 +46,7 @@ export default function DealersTab({
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -84,6 +87,32 @@ export default function DealersTab({
     return true;
   };
 
+  const startEdit = (dealer: Dealer) => {
+    setEditingId(dealer.id || null);
+    setFormData({
+      name: dealer.name,
+      code: dealer.code,
+      email: dealer.email,
+      password: dealer.password,
+      phone: dealer.phone || "",
+      location: dealer.location || "",
+      manager_name: dealer.manager_name || "",
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setFormData({
+      name: "",
+      code: "",
+      email: "",
+      password: "",
+      phone: "",
+      location: "",
+      manager_name: "",
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -91,7 +120,7 @@ export default function DealersTab({
 
     setIsSubmitting(true);
     try {
-      const result = await onAddDealer({
+      const dealerData = {
         name: formData.name,
         code: formData.code,
         email: formData.email,
@@ -99,27 +128,37 @@ export default function DealersTab({
         phone: formData.phone,
         location: formData.location,
         manager_name: formData.manager_name,
-      });
+      };
 
-      if (result === false) {
-        toast.error("Failed to add dealer. Check browser console for details.");
-        setIsSubmitting(false);
-        return;
+      if (editingId) {
+        const result = await onUpdateDealer(editingId, dealerData);
+        if (result) {
+          toast.success("Dealer updated successfully");
+          cancelEdit();
+        } else {
+          toast.error("Failed to update dealer. Check browser console for details.");
+        }
+      } else {
+        const result = await onAddDealer(dealerData);
+        if (result === false) {
+          toast.error("Failed to add dealer. Check browser console for details.");
+          setIsSubmitting(false);
+          return;
+        }
+        toast.success("Dealer added successfully");
+        setFormData({
+          name: "",
+          code: "",
+          email: "",
+          password: "",
+          phone: "",
+          location: "",
+          manager_name: "",
+        });
       }
-
-      setFormData({
-        name: "",
-        code: "",
-        email: "",
-        password: "",
-        phone: "",
-        location: "",
-        manager_name: "",
-      });
-      toast.success("Dealer added successfully");
     } catch (error) {
-      console.error("Error adding dealer:", error);
-      toast.error(`Failed to add dealer: ${error instanceof Error ? error.message : "Unknown error"}`);
+      console.error("Error saving dealer:", error);
+      toast.error(`Failed to save dealer: ${error instanceof Error ? error.message : "Unknown error"}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -127,9 +166,21 @@ export default function DealersTab({
 
   return (
     <div className="space-y-6">
-      {/* Add Dealer Form */}
+      {/* Add/Edit Dealer Form */}
       <div className="bg-background rounded-lg border border-border p-6">
-        <h2 className="text-xl font-semibold mb-4">Add New Dealer</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">{editingId ? "Edit Dealer" : "Add New Dealer"}</h2>
+          {editingId && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={cancelEdit}
+              className="text-sm"
+            >
+              Cancel Edit
+            </Button>
+          )}
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -256,7 +307,7 @@ export default function DealersTab({
             disabled={isSubmitting}
             className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
-            {isSubmitting ? "Adding Dealer..." : "Add Dealer"}
+            {isSubmitting ? (editingId ? "Updating..." : "Adding...") : (editingId ? "Update Dealer" : "Add Dealer")}
           </Button>
         </form>
       </div>
@@ -295,17 +346,27 @@ export default function DealersTab({
                     <TableCell className="text-sm">{dealer.location || "Not Specified"}</TableCell>
                     <TableCell className="text-sm">{dealer.manager_name}</TableCell>
                     <TableCell className="text-right">
-                      <button
-                        onClick={async () => {
-                          if (dealer.id && window.confirm("Are you sure you want to delete this dealer?")) {
-                            await onDeleteDealer(dealer.id);
-                            toast.success("Dealer deleted successfully");
-                          }
-                        }}
-                        className="inline-flex items-center gap-2 text-destructive hover:text-destructive/80 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => startEdit(dealer)}
+                          className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
+                          title="Edit dealer"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (dealer.id && window.confirm("Are you sure you want to delete this dealer?")) {
+                              await onDeleteDealer(dealer.id);
+                              toast.success("Dealer deleted successfully");
+                            }
+                          }}
+                          className="inline-flex items-center gap-2 text-destructive hover:text-destructive/80 transition-colors"
+                          title="Delete dealer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
