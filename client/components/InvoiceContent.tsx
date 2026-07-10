@@ -31,7 +31,6 @@ function buildInvoiceSpecEntries(project: Project): { label: string; value: stri
     if (t) rows.push({ label, value: t });
   };
   push("Battery warranty", project.batteryWarranty);
-  push("Battery capacity", project.batteryCapacity);
   push("Vehicle warranty", project.vehicleWarranty);
   return rows;
 }

@@ -59,6 +59,7 @@ export interface Project {
   modeOfPayment: string;
   leadSource: string;
   gstNo?: string;
+  saleType?: "regular" | "b2b";
   splitPayments?: SplitPayment[];
   showSplitPaymentDetails?: boolean;
   createdAt: string;
@@ -77,6 +78,7 @@ export default function Projects() {
   const [editingEstimationId, setEditingEstimationId] = useState<string | null>(null);
   const [isLoadingEstimations, setIsLoadingEstimations] = useState(false);
   const [isSavingEstimation, setIsSavingEstimation] = useState(false);
+  const [saleTypeFilter, setSaleTypeFilter] = useState<"regular" | "b2b">("regular");
 
   // Load projects and estimations from Supabase on mount
   useEffect(() => {
@@ -140,6 +142,7 @@ export default function Projects() {
             modeOfPayment: project.mode_of_payment || "Cash",
             leadSource: project.lead_source || "",
             gstNo: project.gst_no || "",
+            saleType: project.sale_type || "regular",
             createdAt: new Date(project.created_at).toLocaleDateString(),
           })) || [];
 
@@ -424,6 +427,7 @@ export default function Projects() {
         amount: newProject.amount,
         modeOfPayment: newProject.modeOfPayment,
         leadSource: newProject.leadSource,
+        saleType: newProject.saleType,
         splitPayments: splitPayments,
         showSplitPaymentDetails: newProject.showSplitPaymentDetails,
         createdAt: new Date().toLocaleDateString(),
@@ -458,6 +462,7 @@ export default function Projects() {
                 mode_of_payment: newProject.modeOfPayment,
                 lead_source: newProject.leadSource || null,
                 gst_no: newProject.gstNo || null,
+                sale_type: newProject.saleType || "regular",
                 show_split_payment_details: newProject.showSplitPaymentDetails ?? false,
               }
             ])
@@ -487,6 +492,7 @@ export default function Projects() {
             modeOfPayment: data[0].mode_of_payment || "Cash",
             leadSource: data[0].lead_source || "",
             gstNo: data[0].gst_no || "",
+            saleType: data[0].sale_type || "regular",
             splitPayments: splitPayments,
             showSplitPaymentDetails: data[0].show_split_payment_details ?? false,
             createdAt: new Date(data[0].created_at).toLocaleDateString(),
@@ -567,6 +573,7 @@ export default function Projects() {
               mode_of_payment: updatedData.modeOfPayment,
               lead_source: updatedData.leadSource || null,
               gst_no: updatedData.gstNo || null,
+              sale_type: updatedData.saleType || "regular",
               show_split_payment_details: updatedData.showSplitPaymentDetails ?? false,
             })
             .eq('id', id);
@@ -907,8 +914,21 @@ export default function Projects() {
                   </div>
                 </div>
               ) : (
-                <div className="w-full">
-                  <table className="w-full text-sm">
+                <div className="space-y-4 w-full">
+                  {/* Sale Type Filter Tabs */}
+                  <Tabs value={saleTypeFilter} onValueChange={(val) => setSaleTypeFilter(val as "regular" | "b2b")} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 bg-muted p-1 rounded-lg max-w-xs">
+                      <TabsTrigger value="regular" className="data-[state=active]:bg-background">Regular Sales</TabsTrigger>
+                      <TabsTrigger value="b2b" className="data-[state=active]:bg-background">B2B Sales</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+
+                  {projects.filter((p) => (p.saleType || "regular") === saleTypeFilter).length === 0 ? (
+                    <div className="bg-card rounded-lg border border-border p-8 text-center">
+                      <p className="text-muted-foreground">No {saleTypeFilter === "b2b" ? "B2B" : "regular"} sales yet</p>
+                    </div>
+                  ) : (
+                    <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-border">
                         <th className="px-3 py-3 text-left font-semibold text-foreground text-xs">
@@ -953,7 +973,7 @@ export default function Projects() {
                       </tr>
                     </thead>
                     <tbody>
-                      {projects.map((project) => (
+                      {projects.filter((p) => (p.saleType || "regular") === saleTypeFilter).map((project) => (
                         <tr
                           key={project.id}
                           className="border-b border-border hover:bg-muted/50 transition-colors text-xs"
@@ -1019,6 +1039,7 @@ export default function Projects() {
                       ))}
                     </tbody>
                   </table>
+                  )}
                 </div>
               )}
             </TabsContent>
