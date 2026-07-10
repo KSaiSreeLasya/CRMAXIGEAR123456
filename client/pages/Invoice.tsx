@@ -34,7 +34,7 @@ export default function Invoice() {
       const saved = localStorage.getItem(settingsKey);
       if (!saved) {
         // First time opening this invoice - generate and immediately save the number
-        const newInvoiceNo = getNextInvoiceNumber();
+        const newInvoiceNo = getNextInvoiceNumber(project?.saleType);
         setInvoiceNo(newInvoiceNo);
         setGstType("cgst-sgst");
         setPlaceOfSupply("TG");
@@ -61,7 +61,7 @@ export default function Invoice() {
       setPlaceOfSupply(parsed.placeOfSupply || "TG");
     } catch (error) {
       console.error("Error loading saved invoice settings:", error);
-      const newInvoiceNo = getNextInvoiceNumber();
+      const newInvoiceNo = getNextInvoiceNumber(project?.saleType);
       setInvoiceNo(newInvoiceNo);
       setGstType("cgst-sgst");
       setPlaceOfSupply("TG");
@@ -78,7 +78,7 @@ export default function Invoice() {
         console.error("Error saving initial invoice settings:", saveError);
       }
     }
-  }, [settingsKey]);
+  }, [settingsKey, project?.saleType]);
 
   useEffect(() => {
     if (!settingsKey || !invoiceNo) return;
@@ -445,8 +445,9 @@ export default function Invoice() {
   );
 }
 
-function getNextInvoiceNumber(): string {
-  const defaultInvoiceNo = "AAV/2026-27/001";
+function getNextInvoiceNumber(saleType?: string): string {
+  const isB2B = saleType === "b2b";
+  const defaultInvoiceNo = isB2B ? "AAV/B2B/2026-27/001" : "AAV/2026-27/001";
   let maxInvoiceNo = defaultInvoiceNo;
   let maxNumericSuffix = 0;
 
@@ -459,6 +460,10 @@ function getNextInvoiceNumber(): string {
       const parsed = JSON.parse(raw) as { invoiceNo?: string };
       const invoice = parsed.invoiceNo?.trim();
       if (!invoice) continue;
+
+      // Filter by sale type: B2B numbers contain "/B2B/", regular ones don't
+      const isB2BInvoice = invoice.includes("/B2B/");
+      if (isB2BInvoice !== isB2B) continue;
 
       const match = invoice.match(/^(.*?)(\d+)$/);
       if (!match) continue;

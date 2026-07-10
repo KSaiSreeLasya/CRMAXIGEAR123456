@@ -37,6 +37,7 @@ export default function EditProjectModal({
     modeOfPayment: "Cash",
     leadSource: "",
     gstNo: "",
+    saleType: "regular",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -67,6 +68,7 @@ export default function EditProjectModal({
         modeOfPayment: project.modeOfPayment || "Cash",
         leadSource: project.leadSource || "",
         gstNo: project.gstNo || "",
+        saleType: project.saleType || "regular",
       });
       setShowSplitPaymentDetails(project.showSplitPaymentDetails ?? false);
 
@@ -162,6 +164,7 @@ export default function EditProjectModal({
       modeOfPayment: formData.modeOfPayment,
       leadSource: formData.leadSource,
       gstNo: formData.gstNo,
+      saleType: formData.saleType as "regular" | "b2b",
       splitPayments: splitPayments,
       showSplitPaymentDetails,
     });
@@ -266,6 +269,20 @@ export default function EditProjectModal({
 
           {/* Modal Body */}
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {/* Sale Type */}
+            <div>
+              <label className="block text-sm font-semibold mb-2">Sale Type *</label>
+              <select
+                name="saleType"
+                value={formData.saleType}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border rounded-lg bg-background transition-colors focus:outline-none focus:ring-2 focus:ring-primary border-border"
+              >
+                <option value="regular">Regular Sale</option>
+                <option value="b2b">B2B Sale</option>
+              </select>
+            </div>
+
             {/* Model No */}
             <div>
               <label className="block text-sm font-semibold mb-2">Model No.</label>
