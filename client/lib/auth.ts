@@ -8,11 +8,24 @@ export const isAuthenticated = (): boolean => {
 };
 
 /** Copy Supabase session access token into auth_token so ProtectedRoute stays in sync. */
+export async function clearInvalidSupabaseSession(): Promise<void> {
+  if (!supabase) return;
+  await supabase.auth.signOut({ scope: "local" });
+  if (!localStorage.getItem("auth_token")?.startsWith("employee-")) {
+    localStorage.removeItem("auth_token");
+  }
+}
+
 export async function hydrateAuthTokenFromSupabase(): Promise<void> {
   if (!supabase) return;
   const {
     data: { session },
+    error,
   } = await supabase.auth.getSession();
+  if (error) {
+    await clearInvalidSupabaseSession();
+    return;
+  }
   if (session?.access_token) {
     localStorage.setItem("auth_token", session.access_token);
   }
@@ -28,7 +41,11 @@ export const logout = (): void => {
 
 export const getCurrentUser = async () => {
   if (!supabase) return null;
-  const { data } = await supabase.auth.getUser();
+  const { data, error } = await supabase.auth.getUser();
+  if (error) {
+    await clearInvalidSupabaseSession();
+    return null;
+  }
   return data.user;
 };
 

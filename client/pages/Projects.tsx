@@ -11,6 +11,7 @@ import { ImportExport } from "@/components/ImportExport";
 import { SplitPaymentForm, type SplitPayment } from "@/components/SplitPaymentForm";
 import { PaymentHistoryDisplay } from "@/components/PaymentHistoryDisplay";
 import { createTransaction, getTransactionByReference, getSplitPaymentsByReference, updateTransaction, ensureSplitPaymentsMigrated } from "@/lib/transactions";
+import { getCurrentUser } from "@/lib/auth";
 import { deductInventoryForSale, restoreInventoryForDeletedSale } from "@/lib/inventory";
 
 interface EstimationRecord {
@@ -434,17 +435,16 @@ export default function Projects() {
       };
 
       if (supabase) {
-        try {
-          const { data: userData } = await supabase.auth.getUser();
-          if (!userData.user?.id) {
-            console.warn('User not authenticated, proceeding without user_id');
+          const user = await getCurrentUser();
+          if (!user) {
+            throw new Error("Your session has expired. Please sign in with your Supabase account and try again.");
           }
 
           const { data, error } = await supabase
             .from('projects')
             .insert([
               {
-                user_id: userData.user?.id || null,
+                user_id: user.id,
                 model_no: newProject.modelNo || null,
                 customer_name: newProject.customerName,
                 contact_no: newProject.contactNo,
@@ -521,13 +521,8 @@ export default function Projects() {
           setProjects([dbProject, ...projects]);
           setIsModalOpen(false);
           return;
-        } catch (supabaseError) {
-          console.error("Error creating project in Supabase:", supabaseError);
-          // Fall through to localStorage
-        }
       }
 
-      // Save to localStorage if Supabase is not available or failed
       const updatedProjects = [createdProject, ...projects];
       localStorage.setItem("crm_projects", JSON.stringify(updatedProjects));
       setProjects(updatedProjects);
