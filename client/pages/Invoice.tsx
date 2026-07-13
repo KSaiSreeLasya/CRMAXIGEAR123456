@@ -211,7 +211,7 @@ export default function Invoice() {
     );
   }
 
-  const saveInvoiceNumber = async (value: string) => {
+  async function saveInvoiceNumber(value: string) {
     const trimmedValue = value.trim();
     if (!projectId || !trimmedValue || !supabase) return;
 
@@ -225,7 +225,7 @@ export default function Invoice() {
     } catch (error) {
       console.error("Error saving invoice number:", error);
     }
-  };
+  }
 
   const handleDownloadPDF = () => {
     const element = document.getElementById("invoice-container");
