@@ -695,18 +695,27 @@ async function getNextInvoiceNumber(saleType: string): Promise<string> {
   const invoicePrefix = isB2B ? "AAV/B2B/2026-27/" : "AAV/2026-27/";
   let maxNumericSuffix = 0;
 
+  const addInvoiceNumber = (invoice: string | null | undefined) => {
+    const sequence = extractInvoiceSequence(invoice, saleType);
+    if (sequence !== null) {
+      maxNumericSuffix = Math.max(maxNumericSuffix, sequence);
+    }
+  };
+
   if (supabase) {
-    const { data, error } = await supabase
+    const typedResult = await supabase
       .from("projects")
       .select("invoice_no, sale_type")
       .eq("sale_type", saleType);
 
-    if (!error) {
-      for (const row of data ?? []) {
-        const match = row.invoice_no?.trim().match(new RegExp(`^${invoicePrefix}(\\d+)$`));
-        if (match) {
-          maxNumericSuffix = Math.max(maxNumericSuffix, Number(match[1]));
-        }
+    if (!typedResult.error) {
+      for (const row of typedResult.data ?? []) {
+        addInvoiceNumber(row.invoice_no);
+      }
+    } else {
+      const fallbackResult = await supabase.from("projects").select("invoice_no");
+      for (const row of fallbackResult.data ?? []) {
+        addInvoiceNumber(row.invoice_no);
       }
     }
   }
@@ -718,14 +727,24 @@ async function getNextInvoiceNumber(saleType: string): Promise<string> {
       const raw = localStorage.getItem(key);
       if (!raw) continue;
       const parsed = JSON.parse(raw) as { invoiceNo?: string };
-      const match = parsed.invoiceNo?.trim().match(new RegExp(`^${invoicePrefix}(\\d+)$`));
-      if (match) {
-        maxNumericSuffix = Math.max(maxNumericSuffix, Number(match[1]));
-      }
+      addInvoiceNumber(parsed.invoiceNo);
     }
   } catch (error) {
     console.error("Error deriving next invoice number:", error);
   }
 
   return `${invoicePrefix}${(maxNumericSuffix + 1).toString().padStart(3, "0")}`;
+}
+
+function extractInvoiceSequence(invoice: string | null | undefined, saleType: string): number | null {
+  const normalizedInvoice = invoice?.trim();
+  if (!normalizedInvoice) return null;
+
+  if (saleType !== "b2b" && /^\\d+$/.test(normalizedInvoice)) {
+    return Number(normalizedInvoice);
+  }
+
+  const prefix = saleType === "b2b" ? "AAV/B2B/2026-27" : "AAV/2026-27";
+  const match = normalizedInvoice.match(new RegExp(`^${prefix}(?:/|-)(\\d+)$`));
+  return match ? Number(match[1]) : null;
 }
