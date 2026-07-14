@@ -4,6 +4,7 @@ interface ProductRow {
   amount: number;
   unit: number;
   gstRate?: number;
+  type?: "single" | "bulk";
 }
 
 interface DealerInvoiceRecord {
@@ -67,7 +68,10 @@ export default function DealerInvoiceContent({
     unit: invoice.unit || 1,
   }] : []);
 
-  const subtotal = products.reduce((sum, p) => sum + (p.amount * p.unit), 0);
+  const subtotal = products.reduce(
+    (sum, p) => sum + (p.type === "bulk" ? p.amount : p.amount * p.unit),
+    0
+  );
   const subtotalWithLabour = subtotal + labourCharges;
   const taxableAmount = subtotalWithLabour;
 
@@ -76,8 +80,8 @@ export default function DealerInvoiceContent({
   const gstRateBreakdown: { rate: number; amount: number }[] = [];
 
   products.forEach((p) => {
-    const productLineTotal = p.amount * p.unit;
-    const rate = p.gstRate || 18;
+    const productLineTotal = p.type === "bulk" ? p.amount : p.amount * p.unit;
+    const rate = p.gstRate ?? 18;
     const gstRate = rate / 100;
     const productGst = roundCurrency(productLineTotal * gstRate);
     totalProductGst += productGst;
@@ -254,12 +258,12 @@ export default function DealerInvoiceContent({
                 {roundCurrency(product.amount).toFixed(2)}
               </td>
               <td className="px-3 py-2 text-right text-gray-700 font-medium">
-                {product.gstRate || 18}%
+                {product.gstRate ?? 18}%
               </td>
               <td className="px-3 py-2 text-right text-gray-900 font-medium">
                 {roundCurrency(
-                  product.amount * product.unit +
-                  (product.amount * product.unit * ((product.gstRate || 18) / 100))
+                  (product.type === "bulk" ? product.amount : product.amount * product.unit) +
+                  ((product.type === "bulk" ? product.amount : product.amount * product.unit) * ((product.gstRate ?? 18) / 100))
                 ).toFixed(2)}
               </td>
             </tr>

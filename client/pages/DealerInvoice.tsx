@@ -273,8 +273,9 @@ const loadInvoices = async () => {
             product: item.product_name || "",
             productDescription: item.product_description || "",
             amount: Number(item.unit_price || 0),
-            unit: Number(item.quantity || 1),
-            gstRate: Number(item.gst_rate || 18),
+            unit: Number(item.quantity ?? 1),
+            gstRate: Number(item.gst_rate ?? 18),
+            type: item.item_type === "bulk" ? "bulk" : "single",
           }));
         }
       } catch (err) {
@@ -343,8 +344,9 @@ const loadSparesInvoices = async () => {
             product: item.product_name || "",
             productDescription: item.description || "",
             amount: Number(item.unit_price || 0),
-            unit: Number(item.unit_quantity || 1),
-            gstRate: Number(item.gst_rate || 18),
+            unit: Number(item.unit_quantity ?? 1),
+            gstRate: Number(item.gst_rate ?? 18),
+            type: item.item_type === "bulk" ? "bulk" : "single",
           }));
         }
       } catch (err) {
@@ -406,7 +408,7 @@ const loadSparesInvoices = async () => {
 
   const calculateInvoiceTotal = (products: ProductRow[], labour: number) => {
     const productTotal = products.reduce(
-      (sum, row) => sum + (row.amount * row.unit),
+      (sum, row) => sum + (row.type === "bulk" ? row.amount : row.amount * row.unit),
       0
     );
     const taxableTotal = productTotal + labour;
@@ -416,10 +418,10 @@ const loadSparesInvoices = async () => {
     const gstBreakdown: { rate: number; amount: number }[] = [];
 
     products.forEach((product) => {
-      const productLineTotal = product.amount * product.unit;
-      const rate = product.gstRate || 18;
+      const productLineTotal = product.type === "bulk" ? product.amount : product.amount * product.unit;
+      const rate = product.gstRate ?? 18;
       const gstRate = rate / 100;
-      const gstAmount = Math.round(productLineTotal * gstRate);
+      const gstAmount = Number((productLineTotal * gstRate).toFixed(2));
       totalGst += gstAmount;
       gstBreakdown.push({ rate, amount: gstAmount });
     });
@@ -507,13 +509,14 @@ const loadSparesInvoices = async () => {
         const items = form.products.map((p) => {
           const quantity = p.unit || 1;
           const unit_price = Number(p.amount || 0);
-          const line_total = Number((unit_price * quantity).toFixed(2));
-          const gst_rate = Number(p.gstRate || 18);
-          const gst_amount = Math.round((line_total * gst_rate) / 100);
+          const line_total = Number((p.type === "bulk" ? unit_price : unit_price * quantity).toFixed(2));
+          const gst_rate = Number(p.gstRate ?? 18);
+          const gst_amount = Number((line_total * gst_rate / 100).toFixed(2));
           const line_amount_with_gst = Number((line_total + gst_amount).toFixed(2));
 
           return {
             invoice_id: invoiceId,
+            item_type: p.type === "bulk" ? "bulk" : "single",
             product_name: p.product || "",
             product_description: p.productDescription || null,
             quantity,
@@ -776,12 +779,13 @@ const loadSparesInvoices = async () => {
           const items = sparesForm.products.map((p) => {
             const quantity = p.unit || 1;
             const unit_price = Number(p.amount || 0);
-            const line_total = Number((unit_price * quantity).toFixed(2));
-            const gst_rate = Number(p.gstRate || 18);
-            const gst_amount = Math.round((line_total * gst_rate) / 100);
+            const line_total = Number((p.type === "bulk" ? unit_price : unit_price * quantity).toFixed(2));
+            const gst_rate = Number(p.gstRate ?? 18);
+            const gst_amount = Number((line_total * gst_rate / 100).toFixed(2));
 
             return {
               spares_invoice_id: invoiceId,
+              item_type: p.type === "bulk" ? "bulk" : "single",
               product_name: p.product || "",
               description: p.productDescription || null,
               unit_quantity: quantity,
@@ -1206,7 +1210,7 @@ const loadSparesInvoices = async () => {
                 {form.products.map((product, idx) => {
                   const isBulk = product.type === "bulk";
                   const lineTotal = isBulk ? product.amount : product.amount * product.unit;
-                  const gstAmount = (lineTotal * (product.gstRate || 18)) / 100;
+                  const gstAmount = (lineTotal * (product.gstRate ?? 18)) / 100;
                   const totalWithGst = lineTotal + gstAmount;
 
                   return (
@@ -1331,7 +1335,8 @@ const loadSparesInvoices = async () => {
                             value={product.gstRate !== undefined ? product.gstRate : 18}
                             onChange={(e) => {
                               const updated = [...form.products];
-                              updated[idx].gstRate = parseFloat(e.target.value) ?? 18;
+                              const gstRate = Number(e.target.value);
+                              updated[idx].gstRate = Number.isFinite(gstRate) ? gstRate : 0;
                               setForm({ ...form, products: updated });
                             }}
                             className="w-full px-3 py-2 border rounded-md text-sm"
@@ -1813,7 +1818,7 @@ const loadSparesInvoices = async () => {
                     {sparesForm.products.map((product, idx) => {
                       const isBulk = product.type === "bulk";
                       const lineTotal = isBulk ? product.amount : product.amount * product.unit;
-                      const gstAmount = (lineTotal * (product.gstRate || 18)) / 100;
+                      const gstAmount = (lineTotal * (product.gstRate ?? 18)) / 100;
                       const totalWithGst = lineTotal + gstAmount;
 
                       return (
@@ -1938,7 +1943,8 @@ const loadSparesInvoices = async () => {
                                 value={product.gstRate !== undefined ? product.gstRate : 18}
                                 onChange={(e) => {
                                   const updated = [...sparesForm.products];
-                                  updated[idx].gstRate = parseFloat(e.target.value) ?? 18;
+                                  const gstRate = Number(e.target.value);
+                                  updated[idx].gstRate = Number.isFinite(gstRate) ? gstRate : 0;
                                   setSparesForm({ ...sparesForm, products: updated });
                                 }}
                                 className="w-full px-3 py-2 border rounded-md text-sm"
