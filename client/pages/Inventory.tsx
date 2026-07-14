@@ -959,60 +959,60 @@ export default function Inventory() {
                 <p className="text-muted-foreground">No inventory rows yet.</p>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full min-w-[1600px] text-sm">
+                  <table className="inventory-table w-full min-w-[1600px] text-sm">
                     <thead>
                       <tr className="border-b border-border">
-                        <th className="px-3 py-2 text-left">Sl.No</th>
-                        <th className="px-3 py-2 text-left">Model No</th>
-                        <th className="px-3 py-2 text-left">Brand</th>
-                        <th className="px-3 py-2 text-left">Vehicle Model</th>
-                        <th className="px-3 py-2 text-left">HSN No</th>
-                        <th className="px-3 py-2 text-left">Vehicle Count</th>
+                        <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Sl.No</th>
+                        <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Model No</th>
+                        <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Brand</th>
+                        <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Vehicle Model</th>
+                        <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">HSN No</th>
+                        <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Vehicle Count</th>
                         {chassisFilter !== "previous" && (
-                          <th className="px-3 py-2 text-left">Current Chassis (Unsold)</th>
+                          <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Current Chassis (Unsold)</th>
                         )}
                         {chassisFilter !== "current" && (
-                          <th className="px-3 py-2 text-left">Previous Chassis (Sold)</th>
+                          <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Previous Chassis (Sold)</th>
                         )}
-                        <th className="px-3 py-2 text-left">Motor No</th>
-                        <th className="px-3 py-2 text-left">Battery No</th>
-                        <th className="px-3 py-2 text-left">Manufact. Inv No</th>
-                        <th className="px-3 py-2 text-left">Battery Model</th>
-                        <th className="px-3 py-2 text-left">Battery Count</th>
-                        <th className="px-3 py-2 text-left">Sales Count</th>
-                        <th className="px-3 py-2 text-left">Closing Stock</th>
-                        <th className="px-3 py-2 text-left">Action</th>
+                        <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Motor No</th>
+                        <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Battery No</th>
+                        <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Manufact. Inv No</th>
+                        <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Battery Model</th>
+                        <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Battery Count</th>
+                        <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Sales Count</th>
+                        <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Closing Stock</th>
+                        <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Action</th>
                       </tr>
                     </thead>
                     <tbody>
                       {items.map((item) => (
                         <tr key={item.id} className="border-b border-border">
-                          <td className="px-3 py-2">{item.slNo}</td>
-                          <td className="px-3 py-2">{item.modelNo || "-"}</td>
-                          <td className="px-3 py-2">{item.brand || "-"}</td>
-                          <td className="px-3 py-2">{item.vehicleModel || "-"}</td>
-                          <td className="px-3 py-2">{item.hsnNo || "-"}</td>
-                          <td className="px-3 py-2">{item.vehicleCount}</td>
+                          <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.slNo}</td>
+                          <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.modelNo || "-"}</td>
+                          <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.brand || "-"}</td>
+                          <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.vehicleModel || "-"}</td>
+                          <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.hsnNo || "-"}</td>
+                          <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.vehicleCount}</td>
                           {chassisFilter !== "previous" && (
-                            <td className="px-3 py-2 bg-blue-50 dark:bg-blue-950/20">
+                            <td className="px-3 py-3 align-top bg-blue-50 dark:bg-blue-950/20 min-w-[320px]">
                               <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">CURRENT:</span>
-                              <div className="text-sm">{item.chassisNo || "-"}</div>
+                              <div className="text-sm leading-5 whitespace-normal break-normal">{item.chassisNo || "-"}</div>
                             </td>
                           )}
                           {chassisFilter !== "current" && (
-                            <td className="px-3 py-2 bg-gray-50 dark:bg-gray-950/20">
+                            <td className="px-3 py-3 align-top bg-gray-50 dark:bg-gray-950/20 min-w-[320px]">
                               <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">SOLD:</span>
-                              <div className="text-sm">{item.previousChassisNo || "-"}</div>
+                              <div className="text-sm leading-5 whitespace-normal break-normal">{item.previousChassisNo || "-"}</div>
                             </td>
                           )}
-                          <td className="px-3 py-2">{item.motorNo || "-"}</td>
-                          <td className="px-3 py-2">{item.batteryNo || "-"}</td>
-                          <td className="px-3 py-2">{item.manufacturerInvNo || "-"}</td>
-                          <td className="px-3 py-2">{item.batteryModel || "-"}</td>
-                          <td className="px-3 py-2">{item.batteryCount}</td>
-                          <td className="px-3 py-2 font-semibold">{item.salesCount}</td>
-                          <td className="px-3 py-2 font-semibold text-green-600 dark:text-green-400">{item.closingStock}</td>
-                          <td className="px-3 py-2">
+                          <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.motorNo || "-"}</td>
+                          <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.batteryNo || "-"}</td>
+                          <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.manufacturerInvNo || "-"}</td>
+                          <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.batteryModel || "-"}</td>
+                          <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.batteryCount}</td>
+                          <td className="px-3 py-3 align-top whitespace-nowrap break-normal font-semibold">{item.salesCount}</td>
+                          <td className="px-3 py-3 align-top whitespace-nowrap break-normal font-semibold text-green-600 dark:text-green-400">{item.closingStock}</td>
+                          <td className="px-3 py-3 align-top whitespace-nowrap break-normal">
                             <div className="flex items-center gap-3">
                               <button
                                 type="button"
