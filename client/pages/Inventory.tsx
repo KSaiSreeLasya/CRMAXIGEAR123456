@@ -76,6 +76,7 @@ export default function Inventory() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [chassisFilter, setChassisFilter] = useState<"all" | "current" | "previous">("all");
+  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
 
   const [spares, setSpares] = useState<SpareItem[]>([]);
   const [spareForm, setSpareForm] = useState(DEFAULT_SPARE_FORM);
@@ -986,7 +987,20 @@ export default function Inventory() {
                     </thead>
                     <tbody>
                       {items.map((item) => (
-                        <tr key={item.id} className="border-b border-border">
+                        <tr
+                          key={item.id}
+                          className="border-b border-border cursor-pointer hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                          onClick={() => setSelectedItem(item)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              setSelectedItem(item);
+                            }
+                          }}
+                          tabIndex={0}
+                          role="button"
+                          aria-label={`View details for inventory row ${item.slNo}`}
+                        >
                           <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.slNo}</td>
                           <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.modelNo || "-"}</td>
                           <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.brand || "-"}</td>
@@ -1016,14 +1030,20 @@ export default function Inventory() {
                             <div className="flex items-center gap-3">
                               <button
                                 type="button"
-                                onClick={() => handleEdit(item)}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  handleEdit(item);
+                                }}
                                 className="text-primary hover:text-primary/90"
                               >
                                 Edit
                               </button>
                               <button
                                 type="button"
-                                onClick={() => void handleDelete(item.id)}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  void handleDelete(item.id);
+                                }}
                                 className="inline-flex items-center gap-1 text-destructive hover:text-destructive/90"
                               >
                                 <Trash2 className="w-4 h-4" />
