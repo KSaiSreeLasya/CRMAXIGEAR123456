@@ -1326,11 +1326,12 @@ const loadSparesInvoices = async () => {
                           <label className="text-xs font-medium">GST %</label>
                           <input
                             type="number"
-                            placeholder="GST %"
-                            value={product.gstRate || 18}
+                            placeholder="0-100"
+                            min="0"
+                            value={product.gstRate !== undefined ? product.gstRate : 18}
                             onChange={(e) => {
                               const updated = [...form.products];
-                              updated[idx].gstRate = parseFloat(e.target.value) || 18;
+                              updated[idx].gstRate = parseFloat(e.target.value) ?? 18;
                               setForm({ ...form, products: updated });
                             }}
                             className="w-full px-3 py-2 border rounded-md text-sm"
@@ -1932,11 +1933,12 @@ const loadSparesInvoices = async () => {
                               <label className="text-xs font-medium">GST %</label>
                               <input
                                 type="number"
-                                placeholder="GST %"
-                                value={product.gstRate || 18}
+                                placeholder="0-100"
+                                min="0"
+                                value={product.gstRate !== undefined ? product.gstRate : 18}
                                 onChange={(e) => {
                                   const updated = [...sparesForm.products];
-                                  updated[idx].gstRate = parseFloat(e.target.value) || 18;
+                                  updated[idx].gstRate = parseFloat(e.target.value) ?? 18;
                                   setSparesForm({ ...sparesForm, products: updated });
                                 }}
                                 className="w-full px-3 py-2 border rounded-md text-sm"
