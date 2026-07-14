@@ -623,7 +623,7 @@ const loadSparesInvoices = async () => {
       const updated = invoicesList.filter(i => i.id !== id);
       localStorage.setItem("crm_dealer_invoices", JSON.stringify(updated));
 
-      setInvoices(updated);
+      await loadInvoices();
     } catch (error) {
       console.error("Error deleting invoice:", error);
     }
@@ -874,7 +874,7 @@ const loadSparesInvoices = async () => {
       const invoicesList: SparesInvoiceRecord[] = current ? JSON.parse(current) : [];
       const updated = invoicesList.filter(i => i.id !== id);
       localStorage.setItem("crm_spares_invoices", JSON.stringify(updated));
-      setSparesInvoices(updated);
+      await loadSparesInvoices();
     } catch (error) {
       console.error("Error deleting spares invoice:", error);
     }
