@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
+import ProjectAnalysis from "./pages/ProjectAnalysis";
 import Accounts from "./pages/Accounts";
 import Sales from "./pages/Sales";
 import ServiceInvoice from "./pages/ServiceInvoice";
@@ -44,6 +45,7 @@ function AppRoutesContent() {
       />
       <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />
       <Route path="/projects" element={<ProtectedRoute element={<Projects />} />} />
+      <Route path="/project-analysis" element={<ProtectedRoute element={<ProjectAnalysis />} />} />
       <Route path="/accounts" element={<ProtectedRoute element={<Accounts />} />} />
       <Route path="/sales" element={<ProtectedRoute element={<Sales />} />} />
       <Route path="/service-invoice" element={<ProtectedRoute element={<ServiceInvoice />} />} />

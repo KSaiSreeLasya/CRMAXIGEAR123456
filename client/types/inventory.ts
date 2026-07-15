@@ -6,6 +6,9 @@ export interface InventoryItem {
   vehicleModel: string;
   hsnNo: string;
   vehicleCount: number;
+  lotPrice: number;
+  transportationPrice: number;
+  costPrice: number;
   chassisNo: string;
   previousChassisNo: string;
   motorNo: string;

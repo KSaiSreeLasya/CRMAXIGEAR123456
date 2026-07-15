@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, Trash2, Plus, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { getEmployeeSession, isAdminUser } from "@/lib/auth";
+import { getCurrentUser, getEmployeeSession } from "@/lib/auth";
 import { SpareImportExport } from "@/components/SpareImportExport";
 import { ImportExport } from "@/components/ImportExport";
 import { IncomingDealerShipments } from "@/components/inventory/IncomingDealerShipments";
@@ -33,6 +33,8 @@ const DEFAULT_FORM = {
   vehicleModel: "",
   hsnNo: "",
   vehicleCount: "",
+  lotPrice: "",
+  transportationPrice: "",
   chassisNo: "",
   motorNo: "",
   batteryNo: "",
@@ -67,12 +69,20 @@ export default function Inventory() {
   const [isSavingSpare, setIsSavingSpare] = useState(false);
 
   const employeeSession = getEmployeeSession();
-  const isAdmin = isAdminUser();
-
+  const [canManageCosts, setCanManageCosts] = useState(false);
 
   useEffect(() => {
     void loadInventory();
     void loadSpares();
+    void (async () => {
+      const employeeEmail = employeeSession?.email ?? localStorage.getItem("offline_user_email");
+      if (employeeEmail?.toLowerCase() === "admin@axigear.in") {
+        setCanManageCosts(true);
+        return;
+      }
+      const user = await getCurrentUser();
+      setCanManageCosts(user?.email?.toLowerCase() === "admin@axigear.in");
+    })();
   }, []);
 
   const persistLocal = (rows: InventoryItem[]) => {
@@ -100,6 +110,9 @@ export default function Inventory() {
               vehicleModel: row.vehicle_model || "",
               hsnNo: row.hsn_no || "",
               vehicleCount: row.vehicle_count || 0,
+              lotPrice: Number(row.lot_price || 0),
+              transportationPrice: Number(row.transportation_price || 0),
+              costPrice: Number(row.lot_price || 0) + Number(row.transportation_price || 0),
               chassisNo: row.chassis_no || "",
               previousChassisNo: row.previous_chassis_no || "",
               motorNo: row.motor_no || "",
@@ -196,6 +209,9 @@ export default function Inventory() {
     e.preventDefault();
     setIsSaving(true);
     try {
+      if (!canManageCosts) {
+        throw new Error("Only admin@axigear.in can add or edit inventory cost prices.");
+      }
       const vehicleCount = Number(form.vehicleCount || 0);
       const batteryCount = Number(form.batteryCount || 0);
       const salesCount = Number(form.salesCount || 0);
@@ -214,6 +230,9 @@ export default function Inventory() {
         vehicleModel: form.vehicleModel.trim(),
         hsnNo: form.hsnNo.trim(),
         vehicleCount,
+        lotPrice: Number(form.lotPrice || 0),
+        transportationPrice: Number(form.transportationPrice || 0),
+        costPrice: Number(form.lotPrice || 0) + Number(form.transportationPrice || 0),
         chassisNo: chassisString,
         motorNo: form.motorNo.trim(),
         batteryNo: form.batteryNo.trim(),
@@ -235,6 +254,8 @@ export default function Inventory() {
               vehicle_model: payload.vehicleModel || null,
               hsn_no: payload.hsnNo || null,
               vehicle_count: payload.vehicleCount,
+              lot_price: payload.lotPrice,
+              transportation_price: payload.transportationPrice,
               chassis_no: payload.chassisNo || null,
               motor_no: payload.motorNo || null,
               battery_no: payload.batteryNo || null,
@@ -283,7 +304,9 @@ export default function Inventory() {
                   vehicle_model: payload.vehicleModel || null,
                   hsn_no: payload.hsnNo || null,
                   vehicle_count: payload.vehicleCount,
-                  chassis_no: payload.chassisNo || null,
+              lot_price: payload.lotPrice,
+              transportation_price: payload.transportationPrice,
+              chassis_no: payload.chassisNo || null,
                   motor_no: payload.motorNo || null,
                   battery_no: payload.batteryNo || null,
                   manufacturer_inv_no: payload.manufacturerInvNo || null,
@@ -305,6 +328,9 @@ export default function Inventory() {
             vehicleModel: data.vehicle_model || "",
             hsnNo: data.hsn_no || "",
             vehicleCount: data.vehicle_count || 0,
+            lotPrice: Number(data.lot_price || 0),
+            transportationPrice: Number(data.transportation_price || 0),
+            costPrice: Number(data.lot_price || 0) + Number(data.transportation_price || 0),
             chassisNo: data.chassis_no || "",
             previousChassisNo: data.previous_chassis_no || "",
             motorNo: data.motor_no || "",
@@ -371,6 +397,8 @@ export default function Inventory() {
       vehicleModel: item.vehicleModel,
       hsnNo: item.hsnNo,
       vehicleCount: String(item.vehicleCount),
+      lotPrice: String(item.lotPrice),
+      transportationPrice: String(item.transportationPrice),
       chassisNo: item.chassisNo,
       motorNo: item.motorNo,
       batteryNo: item.batteryNo,
@@ -653,6 +681,9 @@ export default function Inventory() {
 
   const handleImportInventory = async (importedItems: Record<string, any>[]) => {
     try {
+      if (!canManageCosts) {
+        throw new Error("Only admin@axigear.in can import inventory cost prices.");
+      }
       let userId: string | undefined;
 
       if (employeeSession) {
@@ -688,6 +719,8 @@ export default function Inventory() {
           vehicle_model: item.vehicleModel || null,
           hsn_no: item.hsnNo || null,
           vehicle_count: vehicleCount,
+          lot_price: Number(item.lotPrice || 0),
+          transportation_price: Number(item.transportationPrice || 0),
           chassis_no: item.chassisNo || null,
           motor_no: item.motorNo || null,
           battery_no: item.batteryNo || null,
@@ -717,6 +750,9 @@ export default function Inventory() {
               vehicleModel: row.vehicle_model || "",
               hsnNo: row.hsn_no || "",
               vehicleCount: row.vehicle_count || 0,
+              lotPrice: Number(row.lot_price || 0),
+              transportationPrice: Number(row.transportation_price || 0),
+              costPrice: Number(row.lot_price || 0) + Number(row.transportation_price || 0),
               chassisNo: row.chassis_no || "",
               previousChassisNo: row.previous_chassis_no || "",
               motorNo: row.motor_no || "",
@@ -745,6 +781,9 @@ export default function Inventory() {
               vehicleModel: item.vehicleModel || "",
               hsnNo: item.hsnNo || "",
               vehicleCount,
+              lotPrice: Number(item.lotPrice || 0),
+              transportationPrice: Number(item.transportationPrice || 0),
+              costPrice: Number(item.costPrice || (Number(item.lotPrice || 0) + Number(item.transportationPrice || 0))),
               chassisNo: item.chassisNo || "",
               previousChassisNo: item.previousChassisNo || "",
               motorNo: item.motorNo || "",
@@ -826,7 +865,7 @@ export default function Inventory() {
                 data={items}
                 onImport={handleImportInventory}
                 dataType="inventory"
-                exportHeaders={["slNo", "modelNo", "brand", "vehicleModel", "hsnNo", "vehicleCount", "chassisNo", "motorNo", "batteryNo", "manufacturerInvNo", "batteryModel", "batteryCount", "salesCount", "closingStock"]}
+                exportHeaders={["slNo", "modelNo", "brand", "vehicleModel", "hsnNo", "vehicleCount", "lotPrice", "transportationPrice", "costPrice", "chassisNo", "motorNo", "batteryNo", "manufacturerInvNo", "batteryModel", "batteryCount", "salesCount", "closingStock"]}
                 filename="inventory_items.csv"
                 title="Sales Vehicles Inventory"
               />
@@ -836,13 +875,16 @@ export default function Inventory() {
               <h2 className="text-xl font-semibold mb-4">
                 {editingId ? "Edit Inventory Row" : "Add Inventory Row"}
               </h2>
-              <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {canManageCosts ? <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <input className="px-4 py-2 border border-border rounded-lg bg-background" placeholder="Sl.No" value={form.slNo} onChange={(e) => setForm((prev) => ({ ...prev, slNo: e.target.value }))} required />
                 <input className="px-4 py-2 border border-border rounded-lg bg-background" placeholder="Model No" value={form.modelNo} onChange={(e) => setForm((prev) => ({ ...prev, modelNo: e.target.value }))} />
                 <input className="px-4 py-2 border border-border rounded-lg bg-background" placeholder="Brand" value={form.brand} onChange={(e) => setForm((prev) => ({ ...prev, brand: e.target.value }))} />
                 <input className="px-4 py-2 border border-border rounded-lg bg-background" placeholder="Vehicle Model" value={form.vehicleModel} onChange={(e) => setForm((prev) => ({ ...prev, vehicleModel: e.target.value }))} />
                 <input className="px-4 py-2 border border-border rounded-lg bg-background" placeholder="HSN No" value={form.hsnNo} onChange={(e) => setForm((prev) => ({ ...prev, hsnNo: e.target.value }))} />
                 <input className="px-4 py-2 border border-border rounded-lg bg-background" type="number" placeholder="Vehicle Count" value={form.vehicleCount} onChange={(e) => setForm((prev) => ({ ...prev, vehicleCount: e.target.value }))} />
+                <input className="px-4 py-2 border border-border rounded-lg bg-background" type="number" min="0" step="0.01" placeholder="Lot Price (per unit)" value={form.lotPrice} onChange={(e) => setForm((prev) => ({ ...prev, lotPrice: e.target.value }))} required />
+                <input className="px-4 py-2 border border-border rounded-lg bg-background" type="number" min="0" step="0.01" placeholder="Transportation Price (per unit)" value={form.transportationPrice} onChange={(e) => setForm((prev) => ({ ...prev, transportationPrice: e.target.value }))} required />
+                <div className="flex items-center rounded-lg border border-border bg-muted px-4 py-2 text-sm font-semibold">Cost Price per unit: ₹{(Number(form.lotPrice || 0) + Number(form.transportationPrice || 0)).toLocaleString("en-IN")}</div>
                 {/* Chassis No Manager */}
                 <div className="md:col-span-3">
                   <label className="block text-sm font-semibold mb-3">Chassis No</label>
@@ -898,7 +940,7 @@ export default function Inventory() {
                     Cancel
                   </button>
                 )}
-              </form>
+              </form> : <p className="text-sm text-muted-foreground">Only admin@axigear.in can add or edit inventory, including lot and transportation prices.</p>}
             </div>
 
             <div className="bg-card rounded-lg border border-border p-6">
@@ -952,6 +994,7 @@ export default function Inventory() {
                         <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Vehicle Model</th>
                         <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">HSN No</th>
                         <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Vehicle Count</th>
+                        <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Cost Price</th>
                         {chassisFilter !== "previous" && (
                           <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Current Chassis (Unsold)</th>
                         )}
@@ -990,6 +1033,7 @@ export default function Inventory() {
                           <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.vehicleModel || "-"}</td>
                           <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.hsnNo || "-"}</td>
                           <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.vehicleCount}</td>
+                          <td className="px-3 py-3 align-top whitespace-nowrap break-normal">₹{(item.costPrice ?? 0).toLocaleString("en-IN")}</td>
                           {chassisFilter !== "previous" && (
                             <td className="px-3 py-3 align-top bg-blue-50 dark:bg-blue-950/20 min-w-[320px]">
                               <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">CURRENT:</span>

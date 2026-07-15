@@ -63,6 +63,8 @@ create index if not exists idx_inventory_user_sl on public.inventory_items (user
 alter table if exists public.projects add column if not exists model_no text;
 alter table public.inventory_items add column if not exists model_no text;
 alter table public.inventory_items add column if not exists hsn_no text;
+alter table public.inventory_items add column if not exists lot_price numeric not null default 0;
+alter table public.inventory_items add column if not exists transportation_price numeric not null default 0;
 create index if not exists idx_inventory_model_no on public.inventory_items (lower(model_no));
 
 alter table public.employees enable row level security;

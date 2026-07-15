@@ -5,6 +5,7 @@ const pageMetadata: Record<string, { title: string; description: string }> = {
   "/": { title: "AXIGEAR CRM Dashboard", description: "Manage EV bike sales, invoices, and retailer accounts" },
   "/dashboard": { title: "Dashboard - AXIGEAR CRM", description: "View your business dashboard and analytics" },
   "/projects": { title: "Projects - AXIGEAR CRM", description: "Manage your EV bike projects and estimations" },
+  "/project-analysis": { title: "Project Analysis - AXIGEAR CRM", description: "Compare sales with inventory cost prices" },
   "/inventory": { title: "Inventory - AXIGEAR CRM", description: "Track and manage your inventory" },
   "/sales": { title: "Sales - AXIGEAR CRM", description: "View and manage sales records" },
   "/dealers": { title: "Dealers - AXIGEAR CRM", description: "Manage dealer and retailer accounts" },

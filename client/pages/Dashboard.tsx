@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout";
-import { Briefcase, CalendarCheck2, Boxes, ShieldCheck, Wrench, Users, Receipt, Truck } from "lucide-react";
+import { BarChart3, Briefcase, CalendarCheck2, Boxes, ShieldCheck, Wrench, Users, Receipt, Truck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -105,6 +105,23 @@ export default function Dashboard() {
                   <h2 className="text-xl font-semibold">SALES</h2>
                   <p className="text-sm text-muted-foreground">
                     Manage account entries and invoices.
+                  </p>
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              to="/project-analysis"
+              className="rounded-lg border border-border bg-card p-6 hover:border-primary hover:shadow-md transition-all"
+            >
+              <div className="flex items-center gap-4">
+                <div className="rounded-md bg-indigo-100 p-3 text-indigo-700">
+                  <BarChart3 className="h-6 w-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold">PROJECT ANALYSIS</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Compare project sales with inventory cost prices.
                   </p>
                 </div>
               </div>
