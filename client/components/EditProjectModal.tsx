@@ -436,20 +436,18 @@ export default function EditProjectModal({
               )}
             </div>
 
-            {/* Chassis No */}
+            {/* Chassis No - Read Only (Auto-populated from Vehicle Model selection) */}
             <div>
               <label className="block text-sm font-semibold mb-2">
-                Chassis No.
+                Chassis No. <span className="text-xs text-muted-foreground">(auto-populated)</span>
               </label>
               <input
                 type="text"
                 name="chassisNo"
                 value={formData.chassisNo}
-                onChange={handleChange}
-                placeholder="Enter chassis number"
-                className={`w-full px-4 py-2 border rounded-lg bg-background transition-colors focus:outline-none focus:ring-2 focus:ring-primary ${
-                  errors.chassisNo ? "border-destructive" : "border-border"
-                }`}
+                readOnly
+                placeholder="Select a vehicle model above to populate"
+                className="w-full px-4 py-2 border rounded-lg bg-muted text-muted-foreground cursor-not-allowed focus:outline-none border-border"
               />
               {errors.chassisNo && (
                 <p className="text-sm text-destructive mt-1">{errors.chassisNo}</p>
