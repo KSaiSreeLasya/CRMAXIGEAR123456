@@ -490,6 +490,12 @@ export default function Attendance() {
         return;
       }
 
+      const offlineEmail = localStorage.getItem("offline_user_email");
+      if (offlineEmail) {
+        if (active) setIsSalaryAdmin(offlineEmail === "admin@axigear.in");
+        return;
+      }
+
       const currentUser = await getCurrentUser();
       if (active) setIsSalaryAdmin(currentUser?.email?.toLowerCase() === "admin@axigear.in");
     })();

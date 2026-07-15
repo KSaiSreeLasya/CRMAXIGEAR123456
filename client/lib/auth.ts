@@ -34,6 +34,7 @@ export async function hydrateAuthTokenFromSupabase(): Promise<void> {
 export const logout = (): void => {
   localStorage.removeItem("auth_token");
   localStorage.removeItem(EMPLOYEE_SESSION_KEY);
+  localStorage.removeItem("offline_user_email");
   if (supabase) {
     supabase.auth.signOut();
   }
