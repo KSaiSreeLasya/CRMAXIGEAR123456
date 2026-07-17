@@ -44,6 +44,9 @@ const DEFAULT_ESTIMATION_FORM = {
 export interface Project {
   id: string;
   modelNo: string;
+  brand?: string;
+  vehicleModel?: string;
+  colour?: string;
   customerName: string;
   contactNo: string;
   location: string;
@@ -131,6 +134,9 @@ export default function Projects() {
           const formattedProjects = data?.map((project: any) => ({
             id: project.id,
             modelNo: project.model_no || "",
+            brand: project.brand || "",
+            vehicleModel: project.vehicle_model || "",
+            colour: project.colour || "",
             customerName: project.customer_name,
             contactNo: project.contact_no,
             location: project.location,

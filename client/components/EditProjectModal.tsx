@@ -21,6 +21,9 @@ export default function EditProjectModal({
 }: EditProjectModalProps) {
   const [formData, setFormData] = useState({
     modelNo: "",
+    brand: "",
+    vehicleModel: "",
+    colour: "",
     customerName: "",
     contactNo: "",
     location: "",
@@ -53,6 +56,9 @@ export default function EditProjectModal({
     if (project) {
       setFormData({
         modelNo: project.modelNo || "",
+        brand: project.brand || "",
+        vehicleModel: project.vehicleModel || "",
+        colour: project.colour || "",
         customerName: project.customerName,
         contactNo: project.contactNo,
         location: project.location,
@@ -147,6 +153,9 @@ export default function EditProjectModal({
 
     await onUpdateProject(project.id, {
       modelNo: formData.modelNo,
+      brand: formData.brand,
+      vehicleModel: formData.vehicleModel,
+      colour: formData.colour,
       customerName: formData.customerName,
       contactNo: formData.contactNo,
       location: formData.location,
@@ -282,6 +291,45 @@ export default function EditProjectModal({
                 <option value="regular">Regular Sale</option>
                 <option value="b2b">B2B Sale</option>
               </select>
+            </div>
+
+            {/* Brand */}
+            <div>
+              <label className="block text-sm font-semibold mb-2">Brand</label>
+              <input
+                type="text"
+                name="brand"
+                value={formData.brand}
+                onChange={handleChange}
+                placeholder="Enter brand name"
+                className="w-full px-4 py-2 border rounded-lg bg-background transition-colors focus:outline-none focus:ring-2 focus:ring-primary border-border"
+              />
+            </div>
+
+            {/* Vehicle Model */}
+            <div>
+              <label className="block text-sm font-semibold mb-2">Vehicle Model</label>
+              <input
+                type="text"
+                name="vehicleModel"
+                value={formData.vehicleModel}
+                onChange={handleChange}
+                placeholder="Enter vehicle model"
+                className="w-full px-4 py-2 border rounded-lg bg-background transition-colors focus:outline-none focus:ring-2 focus:ring-primary border-border"
+              />
+            </div>
+
+            {/* Colour */}
+            <div>
+              <label className="block text-sm font-semibold mb-2">Colour</label>
+              <input
+                type="text"
+                name="colour"
+                value={formData.colour}
+                onChange={handleChange}
+                placeholder="Enter colour"
+                className="w-full px-4 py-2 border rounded-lg bg-background transition-colors focus:outline-none focus:ring-2 focus:ring-primary border-border"
+              />
             </div>
 
             {/* Model No */}

@@ -18,6 +18,9 @@ export default function CreateProjectModal({
 }: CreateProjectModalProps) {
   const [formData, setFormData] = useState({
     modelNo: "",
+    brand: "",
+    vehicleModel: "",
+    colour: "",
     customerName: "",
     contactNo: "",
     location: "",
@@ -47,6 +50,9 @@ export default function CreateProjectModal({
   const [selectedChassisNumbers, setSelectedChassisNumbers] = useState<string[]>([]);
   const [splitPayments, setSplitPayments] = useState<SplitPayment[]>([]);
   const [showSplitPaymentDetails, setShowSplitPaymentDetails] = useState(false);
+  const [inventoryItems, setInventoryItems] = useState<any[]>([]);
+  const [availableBrands, setAvailableBrands] = useState<string[]>([]);
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
 
   useEffect(() => {
     if (isOpen) {
@@ -56,8 +62,34 @@ export default function CreateProjectModal({
       setShowChassisDropdown(false);
       setSelectedChassisNumbers([]);
       void updateInvoiceNumber(formData.saleType);
+      void loadInventoryItems();
     }
   }, [isOpen]);
+
+  const loadInventoryItems = async () => {
+    try {
+      if (supabase) {
+        const { data, error } = await supabase
+          .from("inventory_items")
+          .select("brand, vehicle_model, chassis_no, chassis_colors");
+        if (error) throw error;
+        setInventoryItems(data || []);
+
+        const brands = Array.from(
+          new Set((data || []).map((item: any) => item.brand).filter(Boolean))
+        ) as string[];
+        setAvailableBrands(brands.sort());
+      } else {
+        const raw = localStorage.getItem("crm_inventory_items");
+        const items = raw ? JSON.parse(raw) : [];
+        setInventoryItems(items);
+        const brands = Array.from(new Set(items.map((item: any) => item.brand).filter(Boolean))) as string[];
+        setAvailableBrands(brands.sort());
+      }
+    } catch (error) {
+      console.error("Error loading inventory items:", error);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -85,6 +117,30 @@ export default function CreateProjectModal({
         ...prev,
         [name]: "",
       }));
+    }
+
+    if (name === "brand") {
+      const models = Array.from(
+        new Set(
+          inventoryItems
+            .filter((item: any) => item.brand === value)
+            .map((item: any) => item.vehicle_model)
+            .filter(Boolean)
+        )
+      ) as string[];
+      setAvailableModels(models.sort());
+      setFormData((prev) => ({
+        ...prev,
+        vehicleModel: "",
+        colour: "",
+      }));
+    }
+
+    if (name === "vehicleModel") {
+      setModelLookupMessage("");
+      if (value.trim().length >= 2) {
+        void handleModelLookup(value);
+      }
     }
 
     if (name === "modelNo") {
@@ -133,6 +189,9 @@ export default function CreateProjectModal({
     const invoiceNo = formData.invoiceNo.trim() || await getNextInvoiceNumber(formData.saleType);
     await onCreateProject({
       modelNo: formData.modelNo,
+      brand: formData.brand,
+      vehicleModel: formData.vehicleModel,
+      colour: formData.colour,
       customerName: formData.customerName,
       contactNo: formData.contactNo,
       location: formData.location,
@@ -158,6 +217,9 @@ export default function CreateProjectModal({
     // Reset form
     setFormData({
       modelNo: "",
+      brand: "",
+      vehicleModel: "",
+      colour: "",
       customerName: "",
       contactNo: "",
       location: "",
@@ -249,6 +311,21 @@ export default function CreateProjectModal({
   const handleChassisSelect = (chassisNo: string) => {
     if (!selectedChassisNumbers.includes(chassisNo)) {
       setSelectedChassisNumbers([...selectedChassisNumbers, chassisNo]);
+
+      // Fetch colour from chassis_colors
+      const matchingItem = inventoryItems.find((item: any) =>
+        item.chassis_no?.includes(chassisNo)
+      );
+
+      if (matchingItem?.chassis_colors && typeof matchingItem.chassis_colors === 'object') {
+        const colour = matchingItem.chassis_colors[chassisNo];
+        if (colour) {
+          setFormData((prev) => ({
+            ...prev,
+            colour: colour,
+          }));
+        }
+      }
     }
   };
 
@@ -295,6 +372,44 @@ export default function CreateProjectModal({
                 <option value="b2b">B2B Sale</option>
               </select>
             </div>
+
+            {/* Brand */}
+            <div>
+              <label className="block text-sm font-semibold mb-2">Brand</label>
+              <select
+                name="brand"
+                value={formData.brand}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border rounded-lg bg-background transition-colors focus:outline-none focus:ring-2 focus:ring-primary border-border"
+              >
+                <option value="">Select a brand</option>
+                {availableBrands.map((brand) => (
+                  <option key={brand} value={brand}>
+                    {brand}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Vehicle Model */}
+            {formData.brand && (
+              <div>
+                <label className="block text-sm font-semibold mb-2">Vehicle Model</label>
+                <select
+                  name="vehicleModel"
+                  value={formData.vehicleModel}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border rounded-lg bg-background transition-colors focus:outline-none focus:ring-2 focus:ring-primary border-border"
+                >
+                  <option value="">Select a model</option>
+                  {availableModels.map((model) => (
+                    <option key={model} value={model}>
+                      {model}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Model No */}
             <div>
@@ -474,6 +589,21 @@ export default function CreateProjectModal({
                 </div>
               </div>
             )}
+
+            {/* Colour */}
+            <div>
+              <label className="block text-sm font-semibold mb-2">Colour</label>
+              <input
+                type="text"
+                name="colour"
+                value={formData.colour}
+                onChange={handleChange}
+                placeholder="Auto-populated from chassis selection"
+                className="w-full px-4 py-2 border rounded-lg bg-background transition-colors focus:outline-none focus:ring-2 focus:ring-primary border-border"
+                disabled={!formData.colour}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Colour is automatically fetched when you select a chassis number</p>
+            </div>
 
             {/* Motor No */}
             <div>
