@@ -64,6 +64,18 @@ const DEFAULT_SPARE_FORM = {
   qty: "",
 };
 
+const parseChassisColors = (chassisNo: string, storedColors: unknown): Record<string, string> => {
+  if (storedColors && typeof storedColors === "object" && !Array.isArray(storedColors)) {
+    return Object.fromEntries(
+      Object.entries(storedColors as Record<string, unknown>).map(([chassis, color]) => [chassis, String(color ?? "")])
+    );
+  }
+
+  const colors = typeof storedColors === "string" ? storedColors.split(",").map((color) => color.trim()) : [];
+  return Object.fromEntries(
+    chassisNo.split(",").map((chassis, index) => [chassis.trim(), colors[index] || ""]).filter(([chassis]) => chassis)
+  );
+};
 
 export default function Inventory() {
   const navigate = useNavigate();
@@ -134,6 +146,7 @@ export default function Inventory() {
               costPrice: Number(row.lot_price || 0) + Number(row.transportation_price || 0),
               chassisNo: row.chassis_no || "",
               previousChassisNo: row.previous_chassis_no || "",
+              chassisColors: parseChassisColors(row.chassis_no || "", row.chassis_colors ?? row.colors),
               motorNo: row.motor_no || "",
               batteryNo: row.battery_no || "",
               manufacturerInvNo: row.manufacturer_inv_no || "",
@@ -302,7 +315,7 @@ export default function Inventory() {
         transportationPrice: Number(form.transportationPrice || 0),
         costPrice: Number(form.lotPrice || 0) + Number(form.transportationPrice || 0),
         chassisNo: chassisString,
-        colors: colorString,
+        chassisColors: Object.fromEntries(validEntries.map((item) => [item.chassis.trim(), item.color.trim()])),
         motorNo: form.motorNo.trim(),
         batteryNo: form.batteryNo.trim(),
         manufacturerInvNo: form.manufacturerInvNo.trim(),
@@ -326,7 +339,7 @@ export default function Inventory() {
               lot_price: payload.lotPrice,
               transportation_price: payload.transportationPrice,
               chassis_no: payload.chassisNo || null,
-              colors: payload.colors || null,
+              chassis_colors: payload.chassisColors,
               motor_no: payload.motorNo || null,
               battery_no: payload.batteryNo || null,
               manufacturer_inv_no: payload.manufacturerInvNo || null,
@@ -377,7 +390,7 @@ export default function Inventory() {
               lot_price: payload.lotPrice,
               transportation_price: payload.transportationPrice,
               chassis_no: payload.chassisNo || null,
-              colors: payload.colors || null,
+              chassis_colors: payload.chassisColors,
                   motor_no: payload.motorNo || null,
                   battery_no: payload.batteryNo || null,
                   manufacturer_inv_no: payload.manufacturerInvNo || null,
@@ -404,6 +417,7 @@ export default function Inventory() {
             costPrice: Number(data.lot_price || 0) + Number(data.transportation_price || 0),
             chassisNo: data.chassis_no || "",
             previousChassisNo: data.previous_chassis_no || "",
+            chassisColors: parseChassisColors(data.chassis_no || "", data.chassis_colors ?? data.colors),
             motorNo: data.motor_no || "",
             batteryNo: data.battery_no || "",
             manufacturerInvNo: data.manufacturer_inv_no || "",
@@ -482,13 +496,9 @@ export default function Inventory() {
     const chassisArray = item.chassisNo
       ? item.chassisNo.split(",").map((c) => c.trim()).filter((c) => c)
       : [];
-    const colorsArray = item.colors
-      ? item.colors.split(",").map((c) => c.trim())
-      : [];
-
-    const chassisWithColors = chassisArray.map((chassis, index) => ({
+    const chassisWithColors = chassisArray.map((chassis) => ({
       chassis,
-      color: colorsArray[index] || "",
+      color: item.chassisColors?.[chassis] || "",
     }));
 
     setChassisInputs({ inputs: chassisWithColors.length > 0 ? chassisWithColors : [{ chassis: "", color: "" }] });
@@ -501,12 +511,12 @@ export default function Inventory() {
   const cancelEdit = () => {
     setEditingId(null);
     setForm(DEFAULT_FORM);
-    setChassisInputs({ inputs: [""] });
+    setChassisInputs({ inputs: [{ chassis: "", color: "" }] });
   };
 
   const addChassisInput = () => {
     setChassisInputs((prev) => ({
-      inputs: [...prev.inputs, ""],
+      inputs: [...prev.inputs, { chassis: "", color: "" }],
     }));
   };
 
@@ -518,7 +528,7 @@ export default function Inventory() {
 
   const updateChassisInput = (index: number, value: string) => {
     setChassisInputs((prev) => ({
-      inputs: prev.inputs.map((input, i) => (i === index ? value : input)),
+      inputs: prev.inputs.map((input, i) => (i === index ? { ...input, chassis: value } : input)),
     }));
   };
 
@@ -805,6 +815,7 @@ export default function Inventory() {
           lot_price: Number(item.lotPrice || 0),
           transportation_price: Number(item.transportationPrice || 0),
           chassis_no: item.chassisNo || null,
+          chassis_colors: parseChassisColors(item.chassisNo || "", item.chassisColors ?? item.colors),
           motor_no: item.motorNo || null,
           battery_no: item.batteryNo || null,
           manufacturer_inv_no: item.manufacturerInvNo || null,
@@ -838,6 +849,7 @@ export default function Inventory() {
               costPrice: Number(row.lot_price || 0) + Number(row.transportation_price || 0),
               chassisNo: row.chassis_no || "",
               previousChassisNo: row.previous_chassis_no || "",
+              chassisColors: parseChassisColors(row.chassis_no || "", row.chassis_colors ?? row.colors),
               motorNo: row.motor_no || "",
               batteryNo: row.battery_no || "",
               manufacturerInvNo: row.manufacturer_inv_no || "",
@@ -869,6 +881,7 @@ export default function Inventory() {
               costPrice: Number(item.costPrice || (Number(item.lotPrice || 0) + Number(item.transportationPrice || 0))),
               chassisNo: item.chassisNo || "",
               previousChassisNo: item.previousChassisNo || "",
+              chassisColors: parseChassisColors(item.chassisNo || "", item.chassisColors ?? item.colors),
               motorNo: item.motorNo || "",
               batteryNo: item.batteryNo || "",
               manufacturerInvNo: item.manufacturerInvNo || "",
@@ -948,7 +961,7 @@ export default function Inventory() {
                 data={items}
                 onImport={handleImportInventory}
                 dataType="inventory"
-                exportHeaders={["slNo", "modelNo", "brand", "vehicleModel", "hsnNo", "vehicleCount", "lotPrice", "transportationPrice", "costPrice", "chassisNo", "motorNo", "batteryNo", "manufacturerInvNo", "batteryModel", "batteryCount", "salesCount", "closingStock"]}
+                exportHeaders={["slNo", "modelNo", "brand", "vehicleModel", "hsnNo", "vehicleCount", "lotPrice", "transportationPrice", "costPrice", "chassisNo", "chassisColors", "motorNo", "batteryNo", "manufacturerInvNo", "batteryModel", "batteryCount", "salesCount", "closingStock"]}
                 filename="inventory_items.csv"
                 title="Sales Vehicles Inventory"
               />
@@ -991,8 +1004,17 @@ export default function Inventory() {
                         <input
                           type="text"
                           placeholder={`Chassis No ${index + 1}`}
-                          value={chassis}
+                          value={chassis.chassis}
                           onChange={(e) => updateChassisInput(index, e.target.value)}
+                          className="flex-1 px-4 py-2 border border-border rounded-lg bg-background"
+                        />
+                        <input
+                          type="text"
+                          placeholder={`Colour ${index + 1}`}
+                          value={chassis.color}
+                          onChange={(e) => setChassisInputs((prev) => ({
+                            inputs: prev.inputs.map((input, inputIndex) => inputIndex === index ? { ...input, color: e.target.value } : input),
+                          }))}
                           className="flex-1 px-4 py-2 border border-border rounded-lg bg-background"
                         />
                         {chassisInputs.inputs.length > 1 && (

@@ -11,8 +11,7 @@ export interface InventoryItem {
   costPrice: number;
   chassisNo: string;
   previousChassisNo: string;
-  colors?: string;
-  previousColors?: string;
+  chassisColors?: Record<string, string>;
   motorNo: string;
   batteryNo: string;
   manufacturerInvNo: string;

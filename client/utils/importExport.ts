@@ -10,6 +10,7 @@ export const COLUMN_MAPPINGS: Record<string, Record<string, string[]>> = {
     hsnNo: ["hsn_no", "hsn no", "hsnno", "hsn"],
     vehicleCount: ["vehicle_count", "vehicle count", "vehiclecount", "count"],
     chassisNo: ["chassis_no", "chassis no", "chassisno"],
+    chassisColors: ["chassis_colors", "chassis colors", "chassiscolors", "colors", "colour", "color"],
     motorNo: ["motor_no", "motor no", "motorno"],
     batteryNo: ["battery_no", "battery no", "batteryno"],
     manufacturerInvNo: ["manufacturer_inv_no", "manufacturer inv no", "inv no"],
