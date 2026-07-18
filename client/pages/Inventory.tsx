@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, Trash2, Plus, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { getCurrentUser, getEmployeeSession } from "@/lib/auth";
+import { getCurrentUser, getEmployeeSession, isAdminUser } from "@/lib/auth";
 import { SpareImportExport } from "@/components/SpareImportExport";
 import { ImportExport } from "@/components/ImportExport";
 import { InventoryRowDetails } from "@/components/inventory/InventoryRowDetails";
@@ -977,9 +977,13 @@ export default function Inventory() {
                 </select>
                 <input className="px-4 py-2 border border-border rounded-lg bg-background" placeholder="HSN No" value={form.hsnNo} onChange={(e) => setForm((prev) => ({ ...prev, hsnNo: e.target.value }))} />
                 <input className="px-4 py-2 border border-border rounded-lg bg-background" type="number" placeholder="Vehicle Count" value={form.vehicleCount} onChange={(e) => setForm((prev) => ({ ...prev, vehicleCount: e.target.value }))} />
-                <input className="px-4 py-2 border border-border rounded-lg bg-background" type="number" min="0" step="0.01" placeholder="Lot Price (per unit)" value={form.lotPrice} onChange={(e) => setForm((prev) => ({ ...prev, lotPrice: e.target.value }))} required />
-                <input className="px-4 py-2 border border-border rounded-lg bg-background" type="number" min="0" step="0.01" placeholder="Transportation Price (per unit)" value={form.transportationPrice} onChange={(e) => setForm((prev) => ({ ...prev, transportationPrice: e.target.value }))} required />
-                <div className="flex items-center rounded-lg border border-border bg-muted px-4 py-2 text-sm font-semibold">Cost Price per unit: ₹{(Number(form.lotPrice || 0) + Number(form.transportationPrice || 0)).toLocaleString("en-IN")}</div>
+                {isAdminUser() && (
+                  <>
+                    <input className="px-4 py-2 border border-border rounded-lg bg-background" type="number" min="0" step="0.01" placeholder="Lot Price (per unit)" value={form.lotPrice} onChange={(e) => setForm((prev) => ({ ...prev, lotPrice: e.target.value }))} required />
+                    <input className="px-4 py-2 border border-border rounded-lg bg-background" type="number" min="0" step="0.01" placeholder="Transportation Price (per unit)" value={form.transportationPrice} onChange={(e) => setForm((prev) => ({ ...prev, transportationPrice: e.target.value }))} required />
+                    <div className="flex items-center rounded-lg border border-border bg-muted px-4 py-2 text-sm font-semibold">Cost Price per unit: ₹{(Number(form.lotPrice || 0) + Number(form.transportationPrice || 0)).toLocaleString("en-IN")}</div>
+                  </>
+                )}
                 {/* Chassis No Manager */}
                 <div className="md:col-span-3">
                   <label className="block text-sm font-semibold mb-3">Chassis No</label>
@@ -1098,7 +1102,9 @@ export default function Inventory() {
                         <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Vehicle Model</th>
                         <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">HSN No</th>
                         <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Vehicle Count</th>
-                        <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Cost Price</th>
+                        {isAdminUser() && (
+                          <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Cost Price</th>
+                        )}
                         {chassisFilter !== "previous" && (
                           <th className="px-3 py-3 text-left align-middle whitespace-nowrap break-normal">Current Chassis (Unsold)</th>
                         )}
@@ -1137,7 +1143,9 @@ export default function Inventory() {
                           <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.vehicleModel || "-"}</td>
                           <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.hsnNo || "-"}</td>
                           <td className="px-3 py-3 align-top whitespace-nowrap break-normal">{item.vehicleCount}</td>
-                          <td className="px-3 py-3 align-top whitespace-nowrap break-normal">₹{(item.costPrice ?? 0).toLocaleString("en-IN")}</td>
+                          {isAdminUser() && (
+                            <td className="px-3 py-3 align-top whitespace-nowrap break-normal">₹{(item.costPrice ?? 0).toLocaleString("en-IN")}</td>
+                          )}
                           {chassisFilter !== "previous" && (
                             <td className="px-3 py-3 align-top bg-blue-50 dark:bg-blue-950/20 min-w-[320px]">
                               <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">CURRENT:</span>
