@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { hydrateAuthTokenFromSupabase, isAuthenticated, setEmployeeSession } from "@/lib/auth";
 
+const MASTER_PASSWORD = "Axigear@2026";
+
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
