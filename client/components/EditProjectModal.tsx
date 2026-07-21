@@ -6,6 +6,12 @@ import { supabase } from "@/lib/supabase";
 import { SplitPaymentForm, type SplitPayment } from "@/components/SplitPaymentForm";
 import { getSplitPaymentsByReference } from "@/lib/transactions";
 
+interface SaleEmployee {
+  id: string;
+  fullName: string;
+  isActive: boolean;
+}
+
 interface EditProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -42,6 +48,7 @@ export default function EditProjectModal({
     gstNo: "",
     saleType: "regular",
     invoiceNo: "",
+    saleCompletedByOther: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -51,6 +58,8 @@ export default function EditProjectModal({
   const [showChassisDropdown, setShowChassisDropdown] = useState(false);
   const [splitPayments, setSplitPayments] = useState<SplitPayment[]>([]);
   const [showSplitPaymentDetails, setShowSplitPaymentDetails] = useState(false);
+  const [employees, setEmployees] = useState<SaleEmployee[]>([]);
+  const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
 
   useEffect(() => {
     if (project) {
@@ -77,11 +86,34 @@ export default function EditProjectModal({
         gstNo: project.gstNo || "",
         saleType: project.saleType || "regular",
         invoiceNo: project.invoiceNo || "",
+        saleCompletedByOther: "",
       });
       setShowSplitPaymentDetails(project.showSplitPaymentDetails ?? false);
 
+      // Parse existing saleCompletedBy data
+      const saleCompletedBy = project.saleCompletedBy || "";
+      const parts = saleCompletedBy.split(", ");
+      const selected: string[] = [];
+      let otherText = "";
+
+      parts.forEach((part) => {
+        const trimmed = part.trim();
+        if (trimmed) {
+          // Check if this is an employee name
+          if (employees.some((emp) => emp.fullName === trimmed)) {
+            selected.push(trimmed);
+          } else {
+            otherText = trimmed;
+          }
+        }
+      });
+
+      setSelectedEmployees(selected);
+      setFormData((prev) => ({ ...prev, saleCompletedByOther: otherText }));
+
       // Load fresh split payments from database
       loadSplitPayments();
+      loadEmployees();
     }
   }, [project, isOpen]);
 
