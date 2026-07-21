@@ -66,6 +66,7 @@ export interface Project {
   gstNo?: string;
   saleType?: "regular" | "b2b";
   invoiceNo?: string;
+  saleCompletedBy?: string;
   splitPayments?: SplitPayment[];
   showSplitPaymentDetails?: boolean;
   createdAt: string;
@@ -444,6 +445,7 @@ export default function Projects() {
         modeOfPayment: newProject.modeOfPayment,
         leadSource: newProject.leadSource,
         saleType: newProject.saleType,
+        saleCompletedBy: newProject.saleCompletedBy,
         splitPayments: splitPayments,
         showSplitPaymentDetails: newProject.showSplitPaymentDetails,
         createdAt: new Date().toLocaleDateString(),
@@ -480,6 +482,7 @@ export default function Projects() {
             gst_no: newProject.gstNo || null,
             sale_type: newProject.saleType || "regular",
             invoice_no: newProject.invoiceNo || null,
+            sale_completed_by: newProject.saleCompletedBy || null,
             show_split_payment_details: newProject.showSplitPaymentDetails ?? false,
           };
 
@@ -554,6 +557,7 @@ export default function Projects() {
             gstNo: data[0].gst_no || "",
             saleType: data[0].sale_type || "regular",
             invoiceNo: data[0].invoice_no || "",
+            saleCompletedBy: data[0].sale_completed_by || "",
             splitPayments: splitPayments,
             showSplitPaymentDetails: data[0].show_split_payment_details ?? false,
             createdAt: new Date(data[0].created_at).toLocaleDateString(),
@@ -631,6 +635,7 @@ export default function Projects() {
             gst_no: updatedData.gstNo || null,
             sale_type: updatedData.saleType || "regular",
             invoice_no: updatedData.invoiceNo || null,
+            sale_completed_by: updatedData.saleCompletedBy || null,
             show_split_payment_details: updatedData.showSplitPaymentDetails ?? false,
           };
 
