@@ -273,47 +273,17 @@ export default function Invoice() {
 
   const getInvoiceMessage = () => [
     `Hello ${project.customerName},`,
-    `Your invoice ${invoiceNo} from AXIGEAR ELECTRIC LOUNGE is ready.`,
+    "Your invoice from AXIGEAR ELECTRIC LOUNGE is ready.",
+    "",
+    `Invoice No: ${invoiceNo}`,
+    `Invoice Date: ${project.invoiceDate || project.createdAt}`,
     `Product: ${project.productDescription}`,
-    `Amount: ₹${project.amount.toLocaleString("en-IN")}`,
+    `Invoice Value: ₹${project.amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`,
+    "",
     "Please contact us if you need any assistance.",
-  ].join("\\n");
+  ].join("\n");
 
-  const getInvoicePdf = async () => {
-    const element = document.getElementById("invoice-container");
-    if (!element) throw new Error("Invoice not found");
-
-    const html2pdfModule = await import("html2pdf.js");
-    const html2pdf = html2pdfModule.default;
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-").split("T").join("_").slice(0, -5);
-    const cleanInvoiceNo = invoiceNo.replace(/\//g, "-");
-    const options = {
-      margin: 0,
-      filename: `${cleanInvoiceNo}_${timestamp}.pdf`,
-      image: { type: "png" as const, quality: 0.98 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: "#ffffff",
-        windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight,
-      },
-      jsPDF: {
-        unit: "px",
-        format: [element.scrollWidth, element.scrollHeight] as [number, number],
-        orientation: element.scrollWidth > element.scrollHeight ? ("landscape" as const) : ("portrait" as const),
-        compress: true,
-      },
-      pagebreak: { mode: ["css", "legacy"] },
-    };
-
-    const pdf = await html2pdf().set(options).from(element).outputPdf("blob");
-    return { blob: pdf as Blob, filename: options.filename };
-  };
-
-  const handleSendWhatsApp = async () => {
+  const handleSendWhatsApp = () => {
     const digits = project.contactNo.replace(/\D/g, "");
     const whatsappNumber = digits.length === 10 ? `91${digits}` : digits;
     if (whatsappNumber.length < 10) {
@@ -321,23 +291,11 @@ export default function Invoice() {
       return;
     }
 
-    try {
-      const { blob, filename } = await getInvoicePdf();
-      const file = new File([blob], filename, { type: "application/pdf" });
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({
-          title: `Invoice ${invoiceNo}`,
-          text: getInvoiceMessage(),
-          files: [file],
-        });
-        return;
-      }
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") return;
-      console.error("Unable to share invoice attachment:", error);
-    }
-
-    window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(getInvoiceMessage())}`, "_blank", "noopener,noreferrer");
+    window.open(
+      `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(getInvoiceMessage())}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
   };
 
   const handleDownloadPDF = () => {

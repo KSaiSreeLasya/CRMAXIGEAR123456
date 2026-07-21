@@ -5,6 +5,12 @@ import type { Project } from "@/pages/Projects";
 import { supabase } from "@/lib/supabase";
 import { SplitPaymentForm, type SplitPayment } from "@/components/SplitPaymentForm";
 
+interface SaleEmployee {
+  id: string;
+  fullName: string;
+  isActive: boolean;
+}
+
 interface CreateProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -40,6 +46,7 @@ export default function CreateProjectModal({
     gstNo: "",
     saleType: "regular",
     invoiceNo: "",
+    saleCompletedByOther: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -53,6 +60,8 @@ export default function CreateProjectModal({
   const [inventoryItems, setInventoryItems] = useState<any[]>([]);
   const [availableBrands, setAvailableBrands] = useState<string[]>([]);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [employees, setEmployees] = useState<SaleEmployee[]>([]);
+  const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
 
   useEffect(() => {
     if (isOpen) {
@@ -61,10 +70,50 @@ export default function CreateProjectModal({
       setAvailableChassisNumbers([]);
       setShowChassisDropdown(false);
       setSelectedChassisNumbers([]);
+      setSelectedEmployees([]);
+      setFormData((prev) => ({ ...prev, saleCompletedByOther: "" }));
       void updateInvoiceNumber(formData.saleType);
       void loadInventoryItems();
+      void loadEmployees();
     }
   }, [isOpen]);
+
+  const loadEmployees = async () => {
+    try {
+      let rows: SaleEmployee[] = [];
+      if (supabase) {
+        const { data, error } = await supabase
+          .from("employees")
+          .select("id, full_name, is_active")
+          .order("full_name", { ascending: true });
+        if (error) throw error;
+        rows = (data || []).map((row: any) => ({
+          id: row.id,
+          fullName: row.full_name || "",
+          isActive: row.is_active ?? true,
+        }));
+      } else {
+        const raw = localStorage.getItem("crm_employees");
+        rows = raw
+          ? (JSON.parse(raw) as Array<{ id: string; fullName: string; isActive?: boolean }>).map((row) => ({
+              id: row.id,
+              fullName: row.fullName || "",
+              isActive: row.isActive ?? true,
+            }))
+          : [];
+      }
+      setEmployees(rows.filter((employee) => employee.fullName.trim().toLowerCase() !== "raju k"));
+    } catch (error) {
+      console.error("Error loading employees:", error);
+      const raw = localStorage.getItem("crm_employees");
+      if (raw) {
+        const rows = JSON.parse(raw) as Array<{ id: string; fullName: string; isActive?: boolean }>;
+        setEmployees(rows
+          .filter((employee) => employee.fullName.trim().toLowerCase() !== "raju k")
+          .map((employee) => ({ ...employee, isActive: employee.isActive ?? true })));
+      }
+    }
+  };
 
   const loadInventoryItems = async () => {
     try {
@@ -187,6 +236,9 @@ export default function CreateProjectModal({
     }
 
     const invoiceNo = formData.invoiceNo.trim() || await getNextInvoiceNumber(formData.saleType);
+    const saleCompletedBy = [...selectedEmployees, formData.saleCompletedByOther.trim()]
+      .filter(Boolean)
+      .join(", ");
     await onCreateProject({
       modelNo: formData.modelNo,
       brand: formData.brand,
@@ -211,6 +263,7 @@ export default function CreateProjectModal({
       gstNo: formData.gstNo,
       saleType: formData.saleType as "regular" | "b2b",
       invoiceNo,
+      saleCompletedBy,
       showSplitPaymentDetails,
     }, splitPayments);
 
@@ -239,8 +292,10 @@ export default function CreateProjectModal({
       gstNo: "",
       saleType: "regular",
       invoiceNo: "",
+      saleCompletedByOther: "",
     });
     setSelectedChassisNumbers([]);
+    setSelectedEmployees([]);
     setSplitPayments([]);
     setShowSplitPaymentDetails(false);
   };
@@ -495,6 +550,36 @@ export default function CreateProjectModal({
                   {errors.contactNo}
                 </p>
               )}
+            </div>
+
+            {/* Sale Completed By */}
+            <div>
+              <label className="block text-sm font-semibold mb-2">Sale completed by</label>
+              <div className="space-y-2 rounded-lg border border-border bg-background p-3">
+                {employees.length > 0 ? employees.map((employee) => (
+                  <label key={employee.id} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={selectedEmployees.includes(employee.fullName)}
+                      onChange={(event) => setSelectedEmployees((current) => event.target.checked
+                        ? [...current, employee.fullName]
+                        : current.filter((name) => name !== employee.fullName))}
+                      className="h-4 w-4 rounded border-border"
+                    />
+                    <span>{employee.fullName}{!employee.isActive ? " (Inactive)" : ""}</span>
+                  </label>
+                )) : (
+                  <p className="text-sm text-muted-foreground">No employees available.</p>
+                )}
+                <input
+                  type="text"
+                  name="saleCompletedByOther"
+                  value={formData.saleCompletedByOther}
+                  onChange={handleChange}
+                  placeholder="Other (enter name or text)"
+                  className="w-full px-3 py-2 border border-border rounded-lg bg-background"
+                />
+              </div>
             </div>
 
             {/* Location */}
