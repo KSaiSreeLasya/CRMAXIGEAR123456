@@ -1,10 +1,11 @@
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Edit, ArrowLeft, Search as SearchIcon, X, MessageCircle, Eye } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Plus, Trash2, Edit, ArrowLeft, Search as SearchIcon, X, MessageCircle, Eye, Download, Upload } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { getCurrentUser } from "@/lib/auth";
+import { exportLeadsToExcel, importLeadsFromExcel, LeadImportData } from "@/lib/excel-utils";
 
 interface Lead {
   id: string;
@@ -35,6 +36,7 @@ We look forward to welcoming you!
 
 export default function Leads() {
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -44,6 +46,7 @@ export default function Leads() {
   const [isSaving, setIsSaving] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   useEffect(() => {
     loadLeads();
@@ -299,6 +302,61 @@ export default function Leads() {
     setIsDetailModalOpen(true);
   };
 
+  const handleExportToExcel = () => {
+    if (leads.length === 0) {
+      alert("No leads to export.");
+      return;
+    }
+    exportLeadsToExcel(leads);
+  };
+
+  const handleImportFromExcel = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      const importedData = await importLeadsFromExcel(file);
+      const user = await getCurrentUser();
+
+      if (!user) {
+        throw new Error("Your session has expired. Please sign in again.");
+      }
+
+      const leadsToInsert = importedData.map((item: LeadImportData) => ({
+        user_id: user.id,
+        date: item['Date'],
+        customer_name: item['Customer Name'],
+        phone_no: item['Phone No.'],
+        remark1: item['Remark 1'] || '',
+        remark2: item['Remark 2'] || '',
+        remark3: item['Remark 3'] || '',
+      }));
+
+      if (supabase) {
+        const { error } = await supabase
+          .from('leads')
+          .insert(leadsToInsert);
+
+        if (error) {
+          console.error('Supabase insert error:', error);
+          throw error;
+        }
+      }
+
+      await loadLeads();
+      alert(`Successfully imported ${leadsToInsert.length} leads!`);
+    } catch (error: any) {
+      console.error("Error importing leads:", error);
+      alert(error?.message || "Failed to import leads. Please check the Excel file format.");
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const filteredLeads = leads.filter((lead) => {
     return searchQuery.toLowerCase() === "" ||
       lead.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -327,7 +385,7 @@ export default function Leads() {
                 Manage customer information and remarks.
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap justify-end">
               <Button
                 onClick={handleBulkWhatsApp}
                 variant="outline"
@@ -336,6 +394,30 @@ export default function Leads() {
                 <MessageCircle className="w-4 h-4" />
                 Send to All
               </Button>
+              <Button
+                onClick={handleExportToExcel}
+                variant="outline"
+                className="gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Export to Excel
+              </Button>
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                variant="outline"
+                className="gap-2"
+                disabled={isImporting}
+              >
+                <Upload className="w-4 h-4" />
+                {isImporting ? "Importing..." : "Import from Excel"}
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleImportFromExcel}
+                style={{ display: 'none' }}
+              />
               <Button
                 onClick={() => setIsFormOpen(true)}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
