@@ -223,6 +223,9 @@ export default function CreateProjectModal({
     } else if (isNaN(parseFloat(formData.amount))) {
       newErrors.amount = "Amount must be a valid number";
     }
+    if (!formData.chassisNo.trim() && selectedChassisNumbers.length === 0) {
+      newErrors.chassisNo = "Chassis number is required (enter directly or select from inventory)";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -249,7 +252,7 @@ export default function CreateProjectModal({
       location: formData.location,
       productDescription: formData.productDescription,
       hsnNo: formData.hsnNo,
-      chassisNo: selectedChassisNumbers.join(", "),
+      chassisNo: formData.chassisNo.trim() || selectedChassisNumbers.join(", "),
       motorNo: formData.motorNo,
       batteryNo: formData.batteryNo,
       batteryWarranty: formData.batteryWarranty,
@@ -646,6 +649,27 @@ export default function CreateProjectModal({
               {errors.hsnNo && (
                 <p className="text-sm text-destructive mt-1">{errors.hsnNo}</p>
               )}
+            </div>
+
+            {/* Chassis No - Direct Text Input */}
+            <div>
+              <label className="block text-sm font-semibold mb-2">
+                Chassis No. *
+              </label>
+              <input
+                type="text"
+                name="chassisNo"
+                value={formData.chassisNo}
+                onChange={handleChange}
+                placeholder="Enter chassis number directly"
+                className={`w-full px-4 py-2 border rounded-lg bg-background transition-colors focus:outline-none focus:ring-2 focus:ring-primary ${
+                  errors.chassisNo ? "border-destructive" : "border-border"
+                }`}
+              />
+              {errors.chassisNo && (
+                <p className="text-sm text-destructive mt-1">{errors.chassisNo}</p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">You can enter chassis number directly or select from inventory below</p>
             </div>
 
             {/* Selected Chassis Numbers */}

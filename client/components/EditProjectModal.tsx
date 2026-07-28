@@ -202,6 +202,9 @@ export default function EditProjectModal({
     } else if (isNaN(parseFloat(formData.amount))) {
       newErrors.amount = "Amount must be a valid number";
     }
+    if (!formData.chassisNo.trim()) {
+      newErrors.chassisNo = "Chassis number is required";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -550,22 +553,25 @@ export default function EditProjectModal({
               )}
             </div>
 
-            {/* Chassis No - Read Only (Auto-populated from Vehicle Model selection) */}
+            {/* Chassis No - Editable */}
             <div>
               <label className="block text-sm font-semibold mb-2">
-                Chassis No. <span className="text-xs text-muted-foreground">(auto-populated)</span>
+                Chassis No. *
               </label>
               <input
                 type="text"
                 name="chassisNo"
                 value={formData.chassisNo}
-                readOnly
-                placeholder="Select a vehicle model above to populate"
-                className="w-full px-4 py-2 border rounded-lg bg-muted text-muted-foreground cursor-not-allowed focus:outline-none border-border"
+                onChange={handleChange}
+                placeholder="Enter or edit chassis number"
+                className={`w-full px-4 py-2 border rounded-lg bg-background transition-colors focus:outline-none focus:ring-2 focus:ring-primary ${
+                  errors.chassisNo ? "border-destructive" : "border-border"
+                }`}
               />
               {errors.chassisNo && (
                 <p className="text-sm text-destructive mt-1">{errors.chassisNo}</p>
               )}
+              <p className="text-xs text-muted-foreground mt-1">You can edit the chassis number directly or select from inventory dropdown above</p>
             </div>
 
             {/* Motor No */}
