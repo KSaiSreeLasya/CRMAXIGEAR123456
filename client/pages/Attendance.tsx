@@ -98,11 +98,13 @@ function calculateNetSalary(grossSalary: number | null, paidDays: number, year: 
 }
 
 function matchesEmployee(record: AttendanceEntry, emp: Employee) {
-  if (record.employeeId && record.employeeId === emp.id) return true;
-  return (
-    !record.employeeId &&
-    record.employeeName.trim().toLowerCase() === emp.fullName.trim().toLowerCase()
-  );
+  // Primary match: by ID (most reliable)
+  if (record.employeeId && emp.id && record.employeeId === emp.id) return true;
+  // Fallback: by name (when ID is not available)
+  if (!record.employeeId) {
+    return record.employeeName.trim().toLowerCase() === emp.fullName.trim().toLowerCase();
+  }
+  return false;
 }
 
 function isSunday(year: number, month: number, day: number): boolean {
@@ -564,7 +566,7 @@ export default function Attendance() {
       .from("attendance")
       .select("id")
       .eq("user_id", uid)
-      .eq("employee_name", emp.fullName)
+      .eq("employee_id", emp.id)
       .eq("attendance_date", attendance_date)
       .maybeSingle();
 
@@ -621,7 +623,7 @@ export default function Attendance() {
           .from("attendance")
           .select("id")
           .eq("user_id", uid)
-          .eq("employee_name", emp.fullName)
+          .eq("employee_id", emp.id)
           .eq("attendance_date", attendanceDate)
           .maybeSingle();
 
@@ -753,7 +755,12 @@ export default function Attendance() {
 
   const statusForCell = (emp: Employee, day: number): AttendanceStatus | null => {
     const d = dateISO(viewYear, viewMonth, day);
-    const rec = records.find((r) => matchesEmployee(r, emp) && r.attendanceDate === d);
+    const rec = records.find((r) => {
+      // Match by employeeId first, then by name as fallback
+      const idMatch = r.employeeId === emp.id;
+      const nameMatch = !r.employeeId && r.employeeName.trim().toLowerCase() === emp.fullName.trim().toLowerCase();
+      return (idMatch || nameMatch) && r.attendanceDate === d;
+    });
     return rec?.status ?? null;
   };
 
